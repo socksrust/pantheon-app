@@ -131,7 +131,7 @@ export default class AuthScreen extends Component<Props, State> {
           <BigText>nference</BigText>
         </TextWrapper>
         <ButtonsWrapper>
-        {/*
+          {/*
           <Button fill>
             <FacebookLogo />
             <FacebookButtonText>Continue with Facebook</FacebookButtonText>

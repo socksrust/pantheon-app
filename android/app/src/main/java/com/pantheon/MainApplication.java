@@ -1,4 +1,4 @@
-package com.reactconf;
+package com.pantheon;
 
 import android.app.Application;
 

@@ -16,7 +16,6 @@ import { ROUTENAMES } from '../../navigation/RouteNames';
 import GradientWrapper from '../../components/GradientWrapper';
 import { withContext } from '../../Context';
 
-
 const ForgotButton = styled.TouchableOpacity`
 `;
 
@@ -83,8 +82,7 @@ type State = {
   errorText: string,
 };
 
-@withNavigation
-class LoginScreen extends Component<Props, State> {
+@withNavigation class LoginScreen extends Component<Props, State> {
   state = {
     email: '',
     password: '',
@@ -147,15 +145,8 @@ class LoginScreen extends Component<Props, State> {
         </Header>
         <TextWrapper>
           <BigText>Login</BigText>
-          <Input
-            placeholder="Email"
-            onChangeText={text => this.setState({ email: text })}
-          />
-          <Input
-            placeholder="Password"
-            secureTextEntry
-            onChangeText={text => this.setState({ password: text })}
-          />
+          <Input placeholder="Email" onChangeText={text => this.setState({ email: text })} />
+          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
         </TextWrapper>
         <ButtonsWrapper>
           <Button fill onPress={this.handleLoginPress}>

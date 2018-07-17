@@ -12,7 +12,12 @@ import CEPPickerModal from '../../components/CEPPickerModal';
 import { getLocation } from '../../utils/api';
 import ScheduleAddModal from '../../components/ScheduleAddModal';
 import EventAddMutation from './EventAddMutation';
+import EventEditMutation from './EventEditMutation';
 import { withContext } from '../../Context';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { createQueryRenderer } from '../../relay/RelayUtils';
+import idx from 'idx';
+import { ROUTENAMES } from '../../navigation/RouteNames';
 
 const { width } = Dimensions.get('window');
 
@@ -71,7 +76,7 @@ const SmallText = styled.Text`
 
 const EventName = styled.TextInput.attrs({
   placeholderTextColor: 'rgba(255,255,255,0.43)',
-  placeholder: 'Event Name ...',
+  placeholder: 'Event Title ...',
   underlineColorAndroid: 'transparent',
   selectionColor: 'white',
 })`
@@ -227,7 +232,7 @@ const Container = styled.View`
 type Schedules = { title: string, talker: string, time: string };
 
 type State = {
-  name: string,
+  title: string,
   description: string,
   date: string,
   cep: string,
@@ -253,11 +258,12 @@ type Props = {
   navigation: NavigationScreenProps<NavigationState>,
 };
 
+@withContext
 class EventAdd extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      name: '',
+      title: '',
       description: '',
       date: '',
       cep: '',
@@ -265,13 +271,7 @@ class EventAdd extends React.Component<Props, State> {
       address: '',
       number: '',
       eventLimit: 10,
-      schedules: [
-        {
-          title: 'Entrada e Credenciamento',
-          talker: null,
-          time: '19:00',
-        },
-      ],
+      schedules: [],
       modalTalker: '',
       modalTitle: '',
       modalTime: '',
@@ -280,6 +280,7 @@ class EventAdd extends React.Component<Props, State> {
       isLocationPickerVisible: false,
       isLoading: false,
       isScheduleModalVisible: false,
+      ...this.props.query.event,
     };
     this.timer = null;
   }
@@ -313,7 +314,7 @@ class EventAdd extends React.Component<Props, State> {
 
     getLocation(address, number, cep, (newAddress: string, lat: number, lng: number) =>
       this.setState({
-        coordinates: [lat, lng],
+        coordinates: [lng, lat],
         address: newAddress,
         cep,
         number,
@@ -382,10 +383,11 @@ class EventAdd extends React.Component<Props, State> {
   };
 
   save = () => {
-    const { name, description, coordinates, address, date, number, cep, schedules, eventLimit } = this.state;
+    const { title, description, coordinates, address, date, number, cep, schedules, eventLimit } = this.state;
+    const isEdit = this.props.query.event;
 
-    const input = {
-      title: name,
+    let input = {
+      title,
       description,
       date,
       schedule: schedules,
@@ -396,7 +398,12 @@ class EventAdd extends React.Component<Props, State> {
         street: address,
         number,
       },
+      id: (idx(this, _ => _.props.navigation.state.params.id) || undefined)
     };
+
+    if (isEdit) {
+
+    }
 
     const onError = (err: string) => {
       console.log(err);
@@ -407,15 +414,15 @@ class EventAdd extends React.Component<Props, State> {
       if (response.error) {
         return this.props.context.openModal(response.error);
       }
-      this.props.navigation.goBack();
+      this.props.navigation.navigate(ROUTENAMES.EVENTS);
     };
 
-    EventAddMutation.commit(input, onCompleted, onError);
+    isEdit ? EventEditMutation.commit(input, onCompleted, onError) : EventAddMutation.commit(input, onCompleted, onError);
   };
 
   render() {
     const {
-      name,
+      title,
       description,
       address,
       date,
@@ -432,6 +439,9 @@ class EventAdd extends React.Component<Props, State> {
       modalTalker,
     } = this.state;
     const formatted = address.split('-');
+
+
+    const isEdit = this.props.query.event;
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />
@@ -442,12 +452,12 @@ class EventAdd extends React.Component<Props, State> {
               <CloseIcon />
             </HeaderButton>
             <CreateButton onPress={this.save}>
-              <SmallText>CREATE</SmallText>
+              <SmallText>{isEdit ? 'EDIT' : 'CREATE'}</SmallText>
             </CreateButton>
           </Header>
         </HeaderContainer>
         <ScrollView>
-          <EventName value={name} maxLength={50} onChangeText={(name: string) => this.setState({ name })} />
+          <EventName value={title} maxLength={50} onChangeText={(title: string) => this.setState({ title })} />
           <EventDescription
             value={description}
             maxLength={100}
@@ -525,4 +535,43 @@ class EventAdd extends React.Component<Props, State> {
   }
 }
 
-export default withContext(EventAdd);
+const EventAddFragmentCotnainer = createFragmentContainer(EventAdd, {
+  query: graphql`
+    fragment EventAdd_query on Query @argumentDefinitions(id: { type: "ID" }) {
+      me {
+        email
+      }
+      event(id: $id) {
+        title
+        location {
+          street
+        }
+        description
+        date
+        isOwner
+        schedule {
+          time
+          title
+          talker
+        }
+        publicList {
+          name
+        }
+        isEventAttended
+      }
+    }
+  `,
+});
+
+export default createQueryRenderer(EventAddFragmentCotnainer, EventAdd, {
+  query: graphql`
+    query EventAddQuery($id: ID) {
+      ...EventAdd_query @arguments(id: $id)
+    }
+  `,
+  queriesParams: props => {
+    return {
+      id: idx(props, _ => _.navigation.state.params.id),
+    };
+  },
+});

@@ -7,11 +7,15 @@ import Timeline from 'react-native-timeline-listview';
 import { createFragmentContainer, graphql } from 'react-relay';
 import moment from 'moment';
 import idx from 'idx';
+import { withNavigation } from 'react-navigation';
+
 import AttendToEventMutation from './AttendToEventMutation';
 import CantGoToEventMutation from './CantGoToEventMutation';
 import { IMAGES } from '../../utils/design/images';
 import { createQueryRenderer } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
+import { ROUTENAMES } from '../../navigation/RouteNames';
+
 const { width } = Dimensions.get('window');
 
 const Wrapper = styled(LinearGradient).attrs({
@@ -183,7 +187,9 @@ type State = {};
 
 type Props = {};
 
-@withContext class EventDetails extends Component<Props, State> {
+@withContext 
+@withNavigation
+class EventDetails extends Component<Props, State> {
   getInitials = name => {
     return name ? name.split(' ').slice(0, 2).map(namePart => namePart.charAt(0).toUpperCase()).join('') : '';
   };
@@ -263,7 +269,7 @@ type Props = {};
     );
   };
   render() {
-    const { schedule, title, description, date, location, isEventAttended } = this.props.query.event;
+    const { schedule, title, description, date, location, isEventAttended, isOwner } = this.props.query.event;
 
     return (
       <Wrapper>
@@ -274,9 +280,14 @@ type Props = {};
             <HeaderButton onPress={() => this.props.navigation.goBack()}>
               <CloseIcon />
             </HeaderButton>
-            {/*<HeaderButton>
+            {isOwner && <HeaderButton onPress={() => 
+              this.props.navigation.navigate(
+                ROUTENAMES.EVENT_ADD, 
+                {id: idx(this, _ => _.props.navigation.state.params.id)}
+              )}
+              >
               <EditIcon />
-            </HeaderButton>*/}
+            </HeaderButton>}
           </Header>
         </HeaderContainer>
         <ScrollView>
@@ -331,6 +342,7 @@ const EventDetailFragmentCotnainer = createFragmentContainer(EventDetails, {
         }
         description
         date
+        isOwner
         schedule {
           time
           title

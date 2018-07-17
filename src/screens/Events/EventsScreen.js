@@ -14,6 +14,7 @@ import { withNavigation } from 'react-navigation';
 import LoggedHeader from '../../components/LoggedHeader';
 import ActionButton from '../../components/ActionButton';
 import EventCard from '../../components/EventCardMVP';
+import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
 import DateModal from './DateModal';
@@ -32,7 +33,7 @@ type Props = {
 };
 
 type State = {
-  searchText: string,
+  search: string,
   IsSearchVisible: boolean,
   coordinates: Array<number>,
   distance: number,
@@ -47,7 +48,7 @@ type State = {
 @withNavigation
 class EventsScreen extends Component<Props, State> {
   state = {
-    searchText: '',
+    search: '',
     IsSearchVisible: false,
     coordinates: [0, 0],
     distance: 80,
@@ -58,12 +59,8 @@ class EventsScreen extends Component<Props, State> {
     isFetchingEnd: false,
   };
 
-  changeSearchText = (searchText: string) => {
-    const { coordinates, distance } = this.state;
-
-    this.props.relay.refetch({ search: searchText, coordinates, distance }, null, () => {}, { force: true });
-
-    return this.setState({ searchText });
+  changeSearchText = (search: string): void => {
+    this.refetch({search});
   };
 
   setVisible = () => {
@@ -74,7 +71,7 @@ class EventsScreen extends Component<Props, State> {
   };
 
   componentDidMount() {
-    const { context } = this.props;
+    const { context, relay } = this.props;
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const coordinates = [coords.longitude, coords.latitude];
@@ -83,28 +80,26 @@ class EventsScreen extends Component<Props, State> {
       error => context.openModal(error.message),
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
     );
-    this.props.relay.refetch();
+    relay.refetch();
   }
 
   changeDistance(distance) {
-    const { searchText, coordinates } = this.state;
-
-    console.log('closeDistanceModal refetch', this.state);
-    this.props.relay.refetch({ search: searchText, coordinates, distance }, null, () => {}, { force: true });
-
-    return this.setState({ distance, isDistanceModalVisible: false });
+    this.refetch({distance});
+    return this.setState({ isDistanceModalVisible: false });
   }
 
   setDate(days) {
-    const { searchText, coordinates, distance } = this.state;
-
-    this.props.relay.refetch({ search: searchText, coordinates, distance, days }, null, () => {}, { force: true });
-
-    return this.setState({ days, isDateModalVisible: false });
+    this.refetch({days});
+    return this.setState({ isDateModalVisible: false });
   }
 
   onRefresh = () => {
-    const { isRefreshing } = this.state;
+    this.refetch()
+  };
+
+  refetch = (newRefetchVariable) => {
+    const { relay } = this.props;
+    const { isRefreshing, search, distance, days, coordinates } = this.state;
 
     if (isRefreshing) return;
 
@@ -112,6 +107,11 @@ class EventsScreen extends Component<Props, State> {
 
     const refetchVariables = fragmentVariables => ({
       ...fragmentVariables,
+      search,
+      distance,
+      days,
+      coordinates,
+      ...newRefetchVariable
     });
     this.props.relay.refetch(
       refetchVariables,
@@ -121,12 +121,13 @@ class EventsScreen extends Component<Props, State> {
           isRefreshing: false,
           isFetchingEnd: false,
         });
+        newRefetchVariable && this.setState(newRefetchVariable);
       },
       {
         force: true,
       },
     );
-  };
+  }
 
   onEndReached = () => {
     const { isFetchingEnd } = this.state;
@@ -188,7 +189,7 @@ class EventsScreen extends Component<Props, State> {
   render() {
     const { query } = this.props;
     const {
-      searchText,
+      search,
       IsSearchVisible,
       distance,
       isDistanceModalVisible,
@@ -202,7 +203,7 @@ class EventsScreen extends Component<Props, State> {
         <StatusBar barStyle="light-content" />
         <LoggedHeader
           title="Events"
-          searchValue={searchText}
+          searchValue={search}
           IsSearchVisible={IsSearchVisible}
           showSearch={this.setVisible}
           onChangeSearch={search => this.changeSearchText(search)}
@@ -218,12 +219,13 @@ class EventsScreen extends Component<Props, State> {
           onRefresh={this.onRefresh}
           refreshing={isRefreshing}
           onEndReached={this.onEndReached}
+          ListEmptyComponent={<EmptyView text="Você não possui eventos próximos" />}
         />
         <ActionButton onPress={() => this.props.navigation.navigate(ROUTENAMES.EVENT_ADD)} />
         <DistanceModal
           isVisible={isDistanceModalVisible}
           distance={distance}
-          changeDistance={distance => this.setState({ distance })}
+          changeDistance={distance => this.changeDistance(distance)}
           closeDistanceModal={() => this.setState({ isDistanceModalVisible: false })}
         />
         <DateModal

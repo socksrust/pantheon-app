@@ -258,8 +258,7 @@ type Props = {
   navigation: NavigationScreenProps<NavigationState>,
 };
 
-@withContext
-class EventAdd extends React.Component<Props, State> {
+@withContext class EventAdd extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
@@ -398,11 +397,10 @@ class EventAdd extends React.Component<Props, State> {
         street: address,
         number,
       },
-      id: (idx(this, _ => _.props.navigation.state.params.id) || undefined)
+      id: idx(this, _ => _.props.navigation.state.params.id) || undefined,
     };
 
     if (isEdit) {
-
     }
 
     const onError = (err: string) => {
@@ -417,7 +415,9 @@ class EventAdd extends React.Component<Props, State> {
       this.props.navigation.navigate(ROUTENAMES.EVENTS);
     };
 
-    isEdit ? EventEditMutation.commit(input, onCompleted, onError) : EventAddMutation.commit(input, onCompleted, onError);
+    isEdit
+      ? EventEditMutation.commit(input, onCompleted, onError)
+      : EventAddMutation.commit(input, onCompleted, onError);
   };
 
   render() {
@@ -439,7 +439,6 @@ class EventAdd extends React.Component<Props, State> {
       modalTalker,
     } = this.state;
     const formatted = address.split('-');
-
 
     const isEdit = this.props.query.event;
     return (

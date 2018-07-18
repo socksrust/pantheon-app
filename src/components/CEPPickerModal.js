@@ -126,12 +126,7 @@ const CEPPickerModal = ({
                   <CloseIcon />
                 </CloseAction>
                 <ModalText>{modalText}</ModalText>
-                <Input
-                  mask="[00000]-[000]"
-                  value={cepValue}
-                  placeholder="Zip Code"
-                  onChangeText={(cep: string) => onChangeCep(cep)}
-                />
+                <Input value={cepValue} placeholder="Zip Code" onChangeText={(cep: string) => onChangeCep(cep)} />
                 <Input
                   value={address}
                   placeholder="Address"

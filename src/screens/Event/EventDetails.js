@@ -187,7 +187,7 @@ type State = {};
 
 type Props = {};
 
-@withContext 
+@withContext
 @withNavigation
 class EventDetails extends Component<Props, State> {
   getInitials = name => {
@@ -280,14 +280,15 @@ class EventDetails extends Component<Props, State> {
             <HeaderButton onPress={() => this.props.navigation.goBack()}>
               <CloseIcon />
             </HeaderButton>
-            {isOwner && <HeaderButton onPress={() => 
-              this.props.navigation.navigate(
-                ROUTENAMES.EVENT_ADD, 
-                {id: idx(this, _ => _.props.navigation.state.params.id)}
-              )}
+            {isOwner &&
+              <HeaderButton
+                onPress={() =>
+                  this.props.navigation.navigate(ROUTENAMES.EVENT_ADD, {
+                    id: idx(this, _ => _.props.navigation.state.params.id),
+                  })}
               >
-              <EditIcon />
-            </HeaderButton>}
+                <EditIcon />
+              </HeaderButton>}
           </Header>
         </HeaderContainer>
         <ScrollView>

@@ -15,15 +15,14 @@ const EmptyText = styled.Text`
   font-weight: bold;
 `;
 
-
 type Props = {
   text: string,
 };
 
-const EmptyView = ({text}: Props) => (
+const EmptyView = ({ text }: Props) => (
   <Wrapper>
     <EmptyText>{text}</EmptyText>
   </Wrapper>
-)
+);
 
 export default EmptyView;

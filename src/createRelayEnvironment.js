@@ -10,7 +10,7 @@ const prodUrl = 'https://conference-server.herokuapp.com/graphql';
 const devUrl = 'http://localhost:5000/graphql';
 
 const fetchQuery = async (operation, variables, cacheConfig, uploadables) => {
-  return fetch(devUrl, {
+  return fetch(prodUrl, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

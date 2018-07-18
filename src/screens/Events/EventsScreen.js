@@ -60,7 +60,7 @@ class EventsScreen extends Component<Props, State> {
   };
 
   changeSearchText = (search: string): void => {
-    this.refetch({search});
+    this.refetch({ search });
   };
 
   setVisible = () => {
@@ -84,20 +84,20 @@ class EventsScreen extends Component<Props, State> {
   }
 
   changeDistance(distance) {
-    this.refetch({distance});
+    this.refetch({ distance });
     return this.setState({ isDistanceModalVisible: false });
   }
 
   setDate(days) {
-    this.refetch({days});
+    this.refetch({ days });
     return this.setState({ isDateModalVisible: false });
   }
 
   onRefresh = () => {
-    this.refetch()
+    this.refetch();
   };
 
-  refetch = (newRefetchVariable) => {
+  refetch = newRefetchVariable => {
     const { relay } = this.props;
     const { isRefreshing, search, distance, days, coordinates } = this.state;
 
@@ -111,7 +111,7 @@ class EventsScreen extends Component<Props, State> {
       distance,
       days,
       coordinates,
-      ...newRefetchVariable
+      ...newRefetchVariable,
     });
     this.props.relay.refetch(
       refetchVariables,
@@ -127,7 +127,7 @@ class EventsScreen extends Component<Props, State> {
         force: true,
       },
     );
-  }
+  };
 
   onEndReached = () => {
     const { isFetchingEnd } = this.state;

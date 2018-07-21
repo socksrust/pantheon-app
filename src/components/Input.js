@@ -8,7 +8,7 @@ const InputWrapper = styled.View`
   padding: 10px;
   border-bottom-color: ${props => props.theme.colors.secondaryColor};
   border-bottom-width: 2.5;
-  margin-top: 30px;
+  margin-top: 24px;
 `;
 
 const RegisterTextInput = styled(TextInputMask).attrs({
@@ -20,7 +20,6 @@ const RegisterTextInput = styled(TextInputMask).attrs({
   height: 40;
   width: 100%;
   font-size: 20;
-  padding-top:2;
   color: white;
 `;
 

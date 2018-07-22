@@ -1,9 +1,9 @@
 import * as React from 'react';
+import { Platform } from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import LinearGradient from 'react-native-linear-gradient';
-import styled from 'styled-components/native';
-import { Platform } from 'react-native';
 import Modal from 'react-native-modal';
+import styled from 'styled-components/native';
 
 import Input from './Input';
 import { IMAGES } from '../utils/design/images';
@@ -29,8 +29,7 @@ const ModalTitle = styled.Text`
 const CloseAction = styled.TouchableOpacity`  
   justify-content: center;
   align-items: center;
-  margin-bottom: 12;
-  margin-top: 6;
+  margin: 6px 0 12px 0;  
   width: 20;
   height: 20;
 `;
@@ -43,7 +42,7 @@ const CloseIcon = styled.Image.attrs({
   width: 20;
 `;
 
-const IsLoadingContainer = styled.View`
+const LoadingWrapper = styled.View`
   justify-content: center;
   align-items: center;
   padding: 10px;
@@ -66,7 +65,6 @@ const ActionButton = styled.TouchableOpacity`
   padding: 8px 20px;
   margin: 10px 0px;
   border-radius: 20;
-  z-index: 1000;
 `;
 
 const ActionButtonText = styled.Text`
@@ -101,11 +99,12 @@ type Props = {
 
   onSearchEnd = res => {
     const { onFindLocation } = this.props;
+    const { zipCode, number } = this.state;
 
     onFindLocation({
       ...res,
-      zipCode: this.state.zipCode,
-      number: this.state.number,
+      zipCode,
+      number,
     });
 
     this.setState({
@@ -114,9 +113,9 @@ type Props = {
   };
 
   renderLoading = () => (
-    <IsLoadingContainer>
+    <LoadingWrapper>
       <Loading />
-    </IsLoadingContainer>
+    </LoadingWrapper>
   );
 
   renderForm = onClosePicker => (
@@ -145,12 +144,12 @@ type Props = {
   );
 
   render() {
-    const { isVisible, onClosePicker } = this.props;
+    const { isVisible, onClosePicker, isLoading } = this.props;
 
     return (
       <Modal isVisible={isVisible}>
         <ModalContent>
-          {this.state.isLoading ? this.renderLoading() : this.renderForm(onClosePicker)}
+          {isLoading ? this.renderLoading() : this.renderForm(onClosePicker)}
         </ModalContent>
         {Platform.OS === 'ios' && <KeyboardSpacer />}
       </Modal>

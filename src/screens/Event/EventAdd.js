@@ -413,6 +413,7 @@ class EventAdd extends React.Component<Props, State> {
       isDatePickerVisible,
       schedules,
       isScheduleModalVisible,
+      isLocationPickerVisible,
       modalTitle,
       modalTime,
       modalTalker,
@@ -481,9 +482,9 @@ class EventAdd extends React.Component<Props, State> {
         {Platform.OS === 'ios' && <KeyBoardSpacer />}
 
         <LocationPicker
-          isVisible={this.state.isLocationPickerVisible}
+          isVisible={isLocationPickerVisible}
           onFindLocation={this.onFindLocation}
-          onClosePicker={() => this.setState({ isLocationPickerVisible: !this.state.isLocationPickerVisible })}
+          onClosePicker={() => this.setState({ isLocationPickerVisible: !isLocationPickerVisible })}
         />
 
         <ScheduleAddModal

@@ -1,15 +1,17 @@
 import * as React from 'react';
 import { SafeAreaView, StatusBar, Platform, ScrollView, TouchableOpacity, Dimensions, View } from 'react-native';
-import styled from 'styled-components/native';
+
 import LinearGradient from 'react-native-linear-gradient';
-import { IMAGES } from '../../utils/design/images';
 import KeyBoardSpacer from 'react-native-keyboard-spacer';
 import DatePicker from 'react-native-modal-datetime-picker';
 import Timeline from 'react-native-timeline-listview';
 import type { NavigationScreenProps } from 'react-navigation';
+
+import styled from 'styled-components/native';
 import moment from 'moment';
-import CEPPickerModal from '../../components/CEPPickerModal';
-import { getLocation } from '../../utils/api';
+
+import { IMAGES } from '../../utils/design/images';
+import LocationPicker from '../../components/LocationPicker';
 import ScheduleAddModal from '../../components/ScheduleAddModal';
 import EventAddMutation from './EventAddMutation';
 import { withContext } from '../../Context';
@@ -304,25 +306,6 @@ class EventAdd extends React.Component<Props, State> {
     return name ? name.split(' ').slice(0, 2).map(namePart => namePart.charAt(0).toUpperCase()).join('') : '';
   };
 
-  setGeoLocation = () => {
-    const { cep, number, address } = this.state;
-
-    this.setState({
-      isLoading: true,
-    });
-
-    getLocation(address, number, cep, (newAddress: string, lat: number, lng: number) =>
-      this.setState({
-        coordinates: [lat, lng],
-        address: newAddress,
-        cep,
-        number,
-        isLocationPickerVisible: false,
-        isLoading: false,
-      }),
-    );
-  };
-
   setDatePicker = () => this.setState({ isDatePickerVisible: !this.isDatePickerVisible });
 
   renderItem = (schedule: Schedules) => {
@@ -352,14 +335,10 @@ class EventAdd extends React.Component<Props, State> {
     );
   };
 
-  setLocationModal = () => this.setState({ isLocationPickerVisible: !this.state.isLocationPickerVisible });
-
   setScheduleModal = () => this.setState({ isScheduleModalVisible: !this.state.isScheduleModalVisible });
 
   onCloseScheduleModal = () =>
     this.setState({ modalTalker: '', modalTitle: '', modalTime: '', isScheduleModalVisible: false });
-
-  onCloseModal = () => this.setState({ address: '', cep: '', number: '', isLocationPickerVisible: false });
 
   onConfirmSchedule = () => {
     const { modalTalker, modalTitle, modalTime, schedules } = this.state;
@@ -398,8 +377,7 @@ class EventAdd extends React.Component<Props, State> {
       },
     };
 
-    const onError = (err: string) => {
-      console.log(err);
+    const onError = () => {
       this.props.context.openModal('An Unexpected Error Ocurred');
     };
 
@@ -413,6 +391,18 @@ class EventAdd extends React.Component<Props, State> {
     EventAddMutation.commit(input, onCompleted, onError);
   };
 
+  onFindLocation = location => {
+    const { zipCode, address, lat, lng, number } = location;
+
+    this.setState({
+      isLocationPickerVisible: false,
+      coordinates: [lat, lng],
+      address,
+      cep: zipCode,
+      number,
+    });
+  };
+
   render() {
     const {
       name,
@@ -422,10 +412,6 @@ class EventAdd extends React.Component<Props, State> {
       eventLimit,
       isDatePickerVisible,
       schedules,
-      isLocationPickerVisible,
-      cep,
-      number,
-      isLoading,
       isScheduleModalVisible,
       modalTitle,
       modalTime,
@@ -460,12 +446,16 @@ class EventAdd extends React.Component<Props, State> {
                 <Value>{date ? moment(date).format('MMM Do YYYY') : 'Pick a date'}</Value>
               </TouchableOpacity>
             </ValuesContainer>
+
             <ValuesContainer>
               <Value active>WHERE</Value>
-              <TouchableOpacity onPress={this.setLocationModal}>
+              <TouchableOpacity
+                onPress={() => this.setState({ isLocationPickerVisible: !this.state.isLocationPickerVisible })}
+              >
                 <Value>{address ? formatted[0] : 'Set a location'}</Value>
               </TouchableOpacity>
             </ValuesContainer>
+
           </DateAndLocationRow>
           <DateAndLocationRow>
             <BiggerText active>Event Limit: </BiggerText>
@@ -489,19 +479,13 @@ class EventAdd extends React.Component<Props, State> {
           </Container>
         </ScrollView>
         {Platform.OS === 'ios' && <KeyBoardSpacer />}
-        <CEPPickerModal
-          isVisible={isLocationPickerVisible}
-          cepValue={cep}
-          address={address}
-          number={number}
-          modalText="Set the location of the event"
-          isLoading={isLoading}
-          onConfirm={this.setGeoLocation}
-          onClose={this.onCloseModal}
-          onChangeAddress={address => this.setState({ address })}
-          onChangeNumber={number => this.setState({ number })}
-          onChangeCep={cep => this.setState({ cep })}
+
+        <LocationPicker
+          isVisible={this.state.isLocationPickerVisible}
+          onFindLocation={this.onFindLocation}
+          onClosePicker={() => this.setState({ isLocationPickerVisible: !this.state.isLocationPickerVisible })}
         />
+
         <ScheduleAddModal
           isVisible={isScheduleModalVisible}
           title={modalTitle}

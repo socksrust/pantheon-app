@@ -64,9 +64,10 @@ class EventsScreen extends Component<Props, State> {
   };
 
   setVisible = () => {
-    const { IsSearchVisible } = this.state;
+    const { IsSearchVisible, search } = this.state;
     this.setState({
       IsSearchVisible: !IsSearchVisible,
+      search: IsSearchVisible ? search : '',
     });
   };
 
@@ -98,7 +99,6 @@ class EventsScreen extends Component<Props, State> {
   };
 
   refetch = newRefetchVariable => {
-    const { relay } = this.props;
     const { isRefreshing, search, distance, days, coordinates } = this.state;
 
     if (isRefreshing) return;
@@ -179,7 +179,7 @@ class EventsScreen extends Component<Props, State> {
         address={splittedAddress[0]}
         date={node.date}
         seeButtonAction={() =>
-          this.props.navigation.navigate(ROUTENAMES.EVENT_DETTAILS, {
+          this.props.navigation.navigate(ROUTENAMES.EVENT_DETAILS, {
             id: node.id,
           })}
       />

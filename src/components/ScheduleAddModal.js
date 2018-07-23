@@ -126,12 +126,7 @@ const ScheduleAddModal = ({
                   <CloseIcon />
                 </CloseAction>
                 <ModalText>{modalText}</ModalText>
-                <Input
-                  mask="[00]:[00]"
-                  value={time}
-                  placeholder="Time"
-                  onChangeText={(cep: string) => onChangeTime(cep)}
-                />
+                <Input value={time} placeholder="Time" onChangeText={(cep: string) => onChangeTime(cep)} />
                 <Input value={title} placeholder="Title" onChangeText={(title: string) => onChangeTitle(title)} />
                 <Input value={talker} placeholder="Talker" onChangeText={(talker: string) => onChangeTalker(talker)} />
               </ScrollView>

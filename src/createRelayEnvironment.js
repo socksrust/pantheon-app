@@ -1,13 +1,8 @@
 /**
  * @flow
  */
-import {
-  Environment,
-  Network,
-  RecordSource,
-  Store,
-} from 'relay-runtime';
-import { AsyncStorage } from "react-native";
+import { Environment, Network, RecordSource, Store } from 'relay-runtime';
+import { AsyncStorage } from 'react-native';
 
 // Define a function that fetches the results of an operation (query/mutation/etc)
 // and returns its results as a Promise:
@@ -15,12 +10,12 @@ const prodUrl = 'https://conference-server.herokuapp.com/graphql';
 const devUrl = 'http://localhost:5000/graphql';
 
 const fetchQuery = async (operation, variables, cacheConfig, uploadables) => {
-  return fetch(devUrl, {
+  return fetch(prodUrl, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': await AsyncStorage.getItem('token'),
+      Authorization: await AsyncStorage.getItem('token'),
     }, // Add authentication and other headers here
     body: JSON.stringify({
       query: operation.text, // GraphQL text from input
@@ -29,7 +24,7 @@ const fetchQuery = async (operation, variables, cacheConfig, uploadables) => {
   }).then(response => {
     return response.json();
   });
-}
+};
 
 // Create a network layer from the fetch function
 const network = Network.create(fetchQuery);

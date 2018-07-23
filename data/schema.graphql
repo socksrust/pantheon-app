@@ -44,6 +44,7 @@ type Event implements Node {
   date: String
   location: Location
   publicLimit: String
+  isOwner: String
 
   """event image"""
   image: String
@@ -110,6 +111,36 @@ type EventEdge {
   cursor: String!
 }
 
+input EventEditInput {
+  """event title"""
+  id: ID!
+
+  """event title"""
+  title: String!
+
+  """event description"""
+  description: String
+
+  """event date"""
+  date: String!
+
+  """event date"""
+  publicLimit: String
+
+  """event image"""
+  image: String
+  location: location
+  schedule: [schedule]
+  clientMutationId: String
+}
+
+type EventEditPayload {
+  message: String
+  error: String
+  event: Event
+  clientMutationId: String
+}
+
 """event location"""
 input location {
   coordinates: [Float]
@@ -154,6 +185,7 @@ type Mutation {
   RegisterEmail(input: RegisterEmailInput!): RegisterEmailPayload
   ChangePassword(input: ChangePasswordInput!): ChangePasswordPayload
   EventAdd(input: EventAddInput!): EventAddPayload
+  EventEdit(input: EventEditInput!): EventEditPayload
   AttendToEvent(input: AttendToEventInput!): AttendToEventPayload
   CantGoToEvent(input: CantGoToEventInput!): CantGoToEventPayload
   MoveToPresenceList(input: MoveToPresenceListInput!): MoveToPresenceListPayload
@@ -189,7 +221,7 @@ type Query {
   ): Node
   me: User
   events(after: String, first: Int, before: String, last: Int, search: String, distance: Int, days: Int, coordinates: [Float]): EventConnection
-  event(id: ID!): Event
+  event(id: ID): Event
   user(id: ID!): User
   users(after: String, first: Int, before: String, last: Int, search: String): UserConnection
 }

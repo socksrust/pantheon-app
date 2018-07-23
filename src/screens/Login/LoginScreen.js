@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, KeyboardAvoidingView, View } from 'react-native';
 
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
@@ -19,12 +19,13 @@ import { withContext } from '../../Context';
 const ForgotButton = styled.TouchableOpacity`
 `;
 
+/* We'll use this later!
 const ForgotText = styled.Text`
   color: ${props => props.theme.colors.secondaryColor};
   font-weight: bold;
   font-size: 20px;
   text-align: right;
-`;
+`;*/
 
 const TextWrapper = styled.View`
   flex: 3;
@@ -39,8 +40,7 @@ const BigText = styled.Text`
 
 const ButtonsWrapper = styled.View`
   flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
+  justify-content: flex-start;
   z-index: 3;
 `;
 
@@ -134,27 +134,27 @@ type State = {
     const { errorText } = context;
 
     return (
-      <GradientWrapper error={errorText ? true : false}>
-        <Header>
-          <ForgotButton onPress={() => navigation.pop()}>
-            <Arrow />
-          </ForgotButton>
-          <ForgotButton>
-            {/*<ForgotText>Forgot Password</ForgotText>*/}
-          </ForgotButton>
-        </Header>
-        <TextWrapper>
+      <KeyboardAvoidingView scrollEnabled={false} style={{ flex: 1 }} behavior="padding">
+        <GradientWrapper error={errorText ? true : false}>
+          <Header>
+            <ForgotButton onPress={() => navigation.pop()}>
+              <Arrow />
+            </ForgotButton>
+          </Header>
           <BigText>Login</BigText>
-          <Input placeholder="Email" onChangeText={text => this.setState({ email: text })} />
-          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
-        </TextWrapper>
-        <ButtonsWrapper>
-          <Button fill onPress={this.handleLoginPress}>
-            <ButtonText error={errorText ? true : false}>Login</ButtonText>
-          </Button>
-        </ButtonsWrapper>
-        <BottomFixedReactLogo />
-      </GradientWrapper>
+          <TextWrapper>
+            <Input autoCorrect={false} placeholder="Email" onChangeText={text => this.setState({ email: text })} />
+            <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
+          </TextWrapper>
+          <ButtonsWrapper>
+            <Button fill onPress={this.handleLoginPress}>
+              <ButtonText error={errorText ? true : false}>Login</ButtonText>
+            </Button>
+          </ButtonsWrapper>
+          <BottomFixedReactLogo />
+          <View style={{ height: 18 }} />
+        </GradientWrapper>
+      </KeyboardAvoidingView>
     );
   }
 }

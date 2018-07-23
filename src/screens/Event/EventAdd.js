@@ -77,12 +77,13 @@ const SmallText = styled.Text`
 `;
 
 const EventName = styled.TextInput.attrs({
+  autoFocus: true,
   placeholderTextColor: 'rgba(255,255,255,0.43)',
   placeholder: 'Event Title ...',
   underlineColorAndroid: 'transparent',
   selectionColor: 'white',
 })`
-  font-size: 32px;
+  font-size: 24px;
   color: white;
   font-weight: 800;
   width: 88%;
@@ -91,13 +92,14 @@ const EventName = styled.TextInput.attrs({
 `;
 
 const EventDescription = styled.TextInput.attrs({
+  blurOnSubmit: true,
+  multiline: true,
   placeholderTextColor: 'rgba(255,255,255,0.43)',
   placeholder: 'What’s the plan for the event?',
   underlineColorAndroid: 'transparent',
-  multiline: true,
   selectionColor: 'white',
 })`
-  font-size: 45px;
+  font-size: 26px;
   color: white;
   font-weight: 800;
   width: 88%;

@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, Animated, KeyboardAvoidingView, Keyboard } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 import { withContext } from '../../Context';
@@ -19,6 +19,12 @@ import GradientWrapper from '../../components/GradientWrapper';
 const ForgotButton = styled.TouchableOpacity`
 `;
 
+const CreateAccountText = styled(Animated.Text)`
+  color: white;
+  font-weight: 800;
+  padding-top: 12px;
+`;
+
 const ForgotText = styled.Text`
   color: ${props => props.theme.colors.secondaryColor};
   font-weight: bold;
@@ -26,21 +32,9 @@ const ForgotText = styled.Text`
   text-align: right;
 `;
 
-const TextWrapper = styled.View`
-  flex: 3;
-`;
-
-const BigText = styled.Text`
-  color: ${props => props.theme.colors.secondaryColor};
-  font-size: 36px;
-  font-weight: bold;
-  padding: 20px 0 20px 0;
-`;
-
 const ButtonsWrapper = styled.View`
   flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
+  justify-content: center;
   z-index: 3;
 `;
 
@@ -83,13 +77,46 @@ type State = {
   errorText: string,
 };
 
-@withNavigation
-class RegisterScreen extends Component<Props, State> {
+@withNavigation class RegisterScreen extends Component<Props, State> {
   state = {
     name: '',
     email: '',
     password: '',
     errorText: '',
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.createAccountTextSize = new Animated.Value(36);
+  }
+
+  componentWillMount() {
+    this.keyboardWillShowSubscription = Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow);
+    this.keyboardWillHideSubscription = Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide);
+  }
+
+  componentWillUnmount() {
+    this.keyboardWillShowSubscription.remove();
+    this.keyboardWillHideSubscription.remove();
+  }
+
+  onKeyboardWillShow = event => {
+    const shrunkCreateAccountTextSize = this.createAccountTextSize._value / 2;
+
+    Animated.timing(this.createAccountTextSize, {
+      duration: event.duration,
+      toValue: shrunkCreateAccountTextSize,
+    }).start();
+  };
+
+  onKeyboardWillHide = event => {
+    const expandedCreateAccountText = this.createAccountTextSize._value * 2;
+
+    Animated.timing(this.createAccountTextSize, {
+      duration: event.duration,
+      toValue: expandedCreateAccountText,
+    }).start();
   };
 
   handleRegisterPress = async () => {
@@ -130,42 +157,37 @@ class RegisterScreen extends Component<Props, State> {
     const { errorText } = context;
 
     return (
-      <GradientWrapper error={errorText ? true : false}>
-        <Header>
-          <ForgotButton onPress={() => navigation.pop()}>
-            <Arrow />
-          </ForgotButton>
-          <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
-            <ForgotText>Login</ForgotText>
-          </ForgotButton>
-        </Header>
-        <TextWrapper>
-          <BigText>Create an Account</BigText>
-          <Input
-            placeholder="Name"
-            onChangeText={text => this.setState({ name: text })}
-          />
-          <Input
-            placeholder="Email"
-            onChangeText={text => this.setState({ email: text })}
-          />
-          <Input
-            placeholder="Password"
-            secureTextEntry
-            onChangeText={text => this.setState({ password: text })}
-          />
-        </TextWrapper>
-        <ButtonsWrapper>
-          <Button fill onPress={this.handleRegisterPress}>
-            <ButtonText error={errorText ? true : false}>
-              Create an Account
-            </ButtonText>
-          </Button>
-        </ButtonsWrapper>
-        <BottomFixedReactLogo />
-      </GradientWrapper>
+      <KeyboardAvoidingView scrollEnabled={false} style={{ flex: 1 }} behavior="padding">
+        <GradientWrapper error={errorText ? true : false}>
+          <Header>
+            <ForgotButton onPress={() => navigation.pop()}>
+              <Arrow />
+            </ForgotButton>
+            <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
+              <ForgotText>Login</ForgotText>
+            </ForgotButton>
+          </Header>
+
+          <CreateAccountText style={{ fontSize: this.createAccountTextSize }}>
+            Create an Account
+          </CreateAccountText>
+
+          <Input autoCorrect={false} placeholder="Name" onChangeText={text => this.setState({ name: text })} />
+          <Input autoCorrect={false} placeholder="Email" onChangeText={text => this.setState({ email: text })} />
+          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
+
+          <ButtonsWrapper>
+            <Button fill onPress={this.handleRegisterPress}>
+              <ButtonText error={errorText ? true : false}>
+                Create an Account
+              </ButtonText>
+            </Button>
+          </ButtonsWrapper>
+          <BottomFixedReactLogo />
+        </GradientWrapper>
+      </KeyboardAvoidingView>
     );
   }
 }
 
-export default withContext(RegisterScreen)
+export default withContext(RegisterScreen);

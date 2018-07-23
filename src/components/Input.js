@@ -3,22 +3,15 @@
 import React from 'react';
 import styled from 'styled-components/native';
 
-const InputWrapper = styled.View`
-  padding: 10px;
-  border-bottom-color: ${props => props.theme.colors.secondaryColor};
-  border-bottom-width: 2.5;
-  margin-top: 24px;
-`;
-
 const RegisterTextInput = styled.TextInput.attrs({
   placeholderTextColor: props => props.theme.colors.secondaryColor,
   underlineColorAndroid: props => props.theme.colors.secondaryColor,
   selectionColor: props => props.theme.colors.secondaryColor,
   autoCapitalize: 'none',
 })`
-  height: 40;
+  height: 50;
   width: 100%;
-  font-size: 20;
+  font-size: 22;
   color: white;
 `;
 
@@ -30,10 +23,6 @@ type Props = {
   secureTextEntry?: boolean,
 };
 
-const Input = (props: Props) => (
-  <InputWrapper>
-    <RegisterTextInput {...props} />
-  </InputWrapper>
-);
+const Input = (props: Props) => <RegisterTextInput {...props} />;
 
 export default Input;

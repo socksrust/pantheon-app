@@ -8,8 +8,7 @@ const Wrapper = styled.TouchableOpacity`
   align-items: center;
   width: 100%;
   height: 60;
-  border-radius: 50;
-  margin-top: 20;
+  border-radius: 50;  
   background-color: ${props => (props.fill ? props.theme.colors.secondaryColor : 'transparent')};
   margin-left: auto;
   margin-right: auto;

@@ -3,23 +3,22 @@
 import React from 'react';
 import styled from 'styled-components/native';
 
-const InputWrapper = styled.View`
-  padding: 10px;
+const InputWrapper = styled.View`  
   border-bottom-color: ${props => props.theme.colors.secondaryColor};
   border-bottom-width: 2.5;
-  margin-top: 24px;
 `;
 
 const RegisterTextInput = styled.TextInput.attrs({
   placeholderTextColor: props => props.theme.colors.secondaryColor,
-  underlineColorAndroid: props => props.theme.colors.secondaryColor,
+  underlineColorAndroid: 'rgba(0,0,0,0)',
   selectionColor: props => props.theme.colors.secondaryColor,
   autoCapitalize: 'none',
 })`
   height: 40;
   width: 100%;
   font-size: 20;
-  color: white;
+  margin-top: 28px;
+  color: white;  
 `;
 
 type Props = {
@@ -31,7 +30,7 @@ type Props = {
 };
 
 const Input = (props: Props) => (
-  <InputWrapper>
+  <InputWrapper {...props}>
     <RegisterTextInput {...props} />
   </InputWrapper>
 );

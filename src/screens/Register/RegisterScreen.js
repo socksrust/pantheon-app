@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage, Animated, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { AsyncStorage, Animated, Keyboard } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 import { withContext } from '../../Context';
@@ -10,6 +10,8 @@ import type { ContextType } from '../../Context';
 import Header from '../../components/common/Header';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import CustomKeyboard from '../../components/CustomKeyboard';
+
 import RegisterMutation from './RegisterEmailMutation';
 
 import { IMAGES } from '../../utils/design/images';
@@ -157,7 +159,7 @@ type State = {
     const { errorText } = context;
 
     return (
-      <KeyboardAvoidingView scrollEnabled={false} style={{ flex: 1 }} behavior="padding">
+      <CustomKeyboard>
         <GradientWrapper error={errorText ? true : false}>
           <Header>
             <ForgotButton onPress={() => navigation.pop()}>
@@ -185,7 +187,7 @@ type State = {
           </ButtonsWrapper>
           <BottomFixedReactLogo />
         </GradientWrapper>
-      </KeyboardAvoidingView>
+      </CustomKeyboard>
     );
   }
 }

@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage, KeyboardAvoidingView, View } from 'react-native';
+import { AsyncStorage, View } from 'react-native';
 
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
@@ -9,6 +9,7 @@ import { withNavigation } from 'react-navigation';
 import Header from '../../components/common/Header';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import CustomKeyboard from '../../components/CustomKeyboard';
 import LoginMutation from './LoginEmailMutation';
 
 import { IMAGES } from '../../utils/design/images';
@@ -19,7 +20,7 @@ import { withContext } from '../../Context';
 const ForgotButton = styled.TouchableOpacity`
 `;
 
-/* We'll use this later!
+/* @todo - We'll use this later!
 const ForgotText = styled.Text`
   color: ${props => props.theme.colors.secondaryColor};
   font-weight: bold;
@@ -134,7 +135,7 @@ type State = {
     const { errorText } = context;
 
     return (
-      <KeyboardAvoidingView scrollEnabled={false} style={{ flex: 1 }} behavior="padding">
+      <CustomKeyboard>
         <GradientWrapper error={errorText ? true : false}>
           <Header>
             <ForgotButton onPress={() => navigation.pop()}>
@@ -143,7 +144,7 @@ type State = {
           </Header>
           <BigText>Login</BigText>
           <TextWrapper>
-            <Input autoCorrect={false} placeholder="Email" onChangeText={text => this.setState({ email: text })} />
+            <Input placeholder="Email" autoCorrect={false} onChangeText={text => this.setState({ email: text })} />
             <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
           </TextWrapper>
           <ButtonsWrapper>
@@ -154,7 +155,7 @@ type State = {
           <BottomFixedReactLogo />
           <View style={{ height: 18 }} />
         </GradientWrapper>
-      </KeyboardAvoidingView>
+      </CustomKeyboard>
     );
   }
 }

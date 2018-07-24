@@ -7,5 +7,6 @@ export const ROUTENAMES = {
   REGISTER: 'RegisterScreen',
   EVENTS: 'EventsScreen',
   EVENT_ADD: 'EventAdd',
-  EVENT_DETTAILS: 'EventDetails',
+  EVENT_DETAILS: 'EventDetails',
+  USER: 'UserScreen',
 };

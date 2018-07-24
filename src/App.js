@@ -13,6 +13,7 @@ type State = {
 class ThemedApp extends React.Component<*, State> {
   state = {
     token: '',
+    tokenRetrieved: false,
   };
 
   componentWillMount() {
@@ -20,18 +21,18 @@ class ThemedApp extends React.Component<*, State> {
     AsyncStorage.getItem('token').then(value => {
       this.setState({
         token: value,
+        tokenRetrieved: true,
       });
     });
   }
+
   render() {
-    const { token } = this.state;
+    const { token, tokenRetrieved } = this.state;
 
     const Launch = createRootNavigator(token);
     return (
       <ThemeProvider theme={theme}>
-        <Provider>
-          <Launch />
-        </Provider>
+        <Provider>{tokenRetrieved ? <Launch /> : null}</Provider>
       </ThemeProvider>
     );
   }

@@ -35,7 +35,7 @@ const LoggedAppRouter = StackNavigator(
     },
     [ROUTENAMES.EVENTS]: { screen: EventsScreen },
     [ROUTENAMES.EVENT_ADD]: { screen: EventAdd },
-    [ROUTENAMES.EVENT_DETTAILS]: { screen: EventDetails },
+    [ROUTENAMES.EVENT_DETAILS]: { screen: EventDetails },
   },
   {
     initialRouteName: ROUTENAMES.EVENTS,

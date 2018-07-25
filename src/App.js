@@ -8,11 +8,13 @@ console.disableYellowBox = true;
 
 type State = {
   token: '',
+  isTokenRetrieved: boolean,
 };
 
 class ThemedApp extends React.Component<*, State> {
   state = {
     token: '',
+    isTokenRetrieved: false,
   };
 
   componentWillMount() {
@@ -20,18 +22,18 @@ class ThemedApp extends React.Component<*, State> {
     AsyncStorage.getItem('token').then(value => {
       this.setState({
         token: value,
+        isTokenRetrieved: true,
       });
     });
   }
+
   render() {
-    const { token } = this.state;
+    const { token, isTokenRetrieved } = this.state;
 
     const Launch = createRootNavigator(token);
     return (
       <ThemeProvider theme={theme}>
-        <Provider>
-          <Launch />
-        </Provider>
+        <Provider>{isTokenRetrieved ? <Launch /> : null}</Provider>
       </ThemeProvider>
     );
   }

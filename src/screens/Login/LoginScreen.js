@@ -16,15 +16,14 @@ import { ROUTENAMES } from '../../navigation/RouteNames';
 import GradientWrapper from '../../components/GradientWrapper';
 import { withContext } from '../../Context';
 
-const ForgotButton = styled.TouchableOpacity`
-`;
+const ForgotButton = styled.TouchableOpacity``;
 
-const ForgotText = styled.Text`
-  color: ${props => props.theme.colors.secondaryColor};
-  font-weight: bold;
-  font-size: 20px;
-  text-align: right;
-`;
+// const ForgotText = styled.Text`
+//   color: ${props => props.theme.colors.secondaryColor};
+//   font-weight: bold;
+//   font-size: 20px;
+//   text-align: right;
+// `;
 
 const TextWrapper = styled.View`
   flex: 3;
@@ -52,14 +51,14 @@ const BottomFixedReactLogo = styled.Image.attrs({
   position: absolute;
   right: -100;
   bottom: -90;
-  tint-color: rgba(0,0,0,0.1);
+  tint-color: rgba(0, 0, 0, 0.1);
   z-index: 1;
 `;
 
 const ButtonText = styled.Text`
   color: ${props => (!props.error ? props.theme.colors.primaryColor : props.theme.colors.errorViewColor)};
   font-size: 24px;
-  font-weight: bold
+  font-weight: bold;
 `;
 
 const Arrow = styled.Image.attrs({
@@ -82,7 +81,8 @@ type State = {
   errorText: string,
 };
 
-@withNavigation class LoginScreen extends Component<Props, State> {
+@withNavigation
+class LoginScreen extends Component<Props, State> {
   state = {
     email: '',
     password: '',
@@ -139,9 +139,7 @@ type State = {
           <ForgotButton onPress={() => navigation.pop()}>
             <Arrow />
           </ForgotButton>
-          <ForgotButton>
-            {/*<ForgotText>Forgot Password</ForgotText>*/}
-          </ForgotButton>
+          <ForgotButton>{/*<ForgotText>Forgot Password</ForgotText>*/}</ForgotButton>
         </Header>
         <TextWrapper>
           <BigText>Login</BigText>

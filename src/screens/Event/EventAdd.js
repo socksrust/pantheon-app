@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { SafeAreaView, StatusBar, Platform, ScrollView, TouchableOpacity, Dimensions, View } from 'react-native';
+import { SafeAreaView, StatusBar, ScrollView, TouchableOpacity, Dimensions, View } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
-import KeyBoardSpacer from 'react-native-keyboard-spacer';
 import DatePicker from 'react-native-modal-datetime-picker';
 import Timeline from 'react-native-timeline-listview';
 import type { NavigationScreenProps } from 'react-navigation';
@@ -249,9 +248,6 @@ type State = {
   isLocationPickerVisible: boolean,
   isLoading: boolean,
   isScheduleModalVisible: boolean,
-  modalTalker: string,
-  modalTime: string,
-  modalTitle: string,
 };
 
 type NavigationState = {
@@ -275,9 +271,6 @@ type Props = {
       number: '',
       eventLimit: 10,
       schedules: [],
-      modalTalker: '',
-      modalTitle: '',
-      modalTime: '',
       errorText: '',
       isDatePickerVisible: false,
       isLocationPickerVisible: false,
@@ -339,25 +332,11 @@ type Props = {
 
   setScheduleModal = () => this.setState({ isScheduleModalVisible: !this.state.isScheduleModalVisible });
 
-  onCloseScheduleModal = () =>
-    this.setState({ modalTalker: '', modalTitle: '', modalTime: '', isScheduleModalVisible: false });
+  onCloseScheduleModal = () => this.setState({ isScheduleModalVisible: false });
 
-  onConfirmSchedule = () => {
-    const { modalTalker, modalTitle, modalTime, schedules } = this.state;
-
-    const schedule = {
-      talker: modalTalker,
-      title: modalTitle,
-      time: modalTime,
-    };
-
-    const newSchedules = [...schedules, schedule];
-
+  onConfirmSchedule = newSchedule => {
     this.setState({
-      modalTalker: '',
-      modalTitle: '',
-      modalTime: '',
-      schedules: newSchedules,
+      schedules: [...this.state.schedules, newSchedule],
       isScheduleModalVisible: false,
     });
   };
@@ -419,9 +398,6 @@ type Props = {
       isDatePickerVisible,
       schedules,
       isScheduleModalVisible,
-      modalTitle,
-      modalTime,
-      modalTalker,
     } = this.state;
     const formatted = address.split('-');
 
@@ -486,7 +462,6 @@ type Props = {
             </AddButton>
           </Container>
         </ScrollView>
-        {Platform.OS === 'ios' && <KeyBoardSpacer />}
 
         <LocationPicker
           isVisible={this.state.isLocationPickerVisible}
@@ -496,17 +471,12 @@ type Props = {
 
         <ScheduleAddModal
           isVisible={isScheduleModalVisible}
-          title={modalTitle}
-          time={modalTime}
-          talker={modalTalker}
           modalText="Add a new item to schedule"
           isLoading={false}
           onClose={this.onCloseScheduleModal}
           onConfirm={this.onConfirmSchedule}
-          onChangeTitle={(modalTitle: string) => this.setState({ modalTitle })}
-          onChangeTime={(modalTime: string) => this.setState({ modalTime })}
-          onChangeTalker={(modalTalker: string) => this.setState({ modalTalker })}
         />
+
         <DatePicker
           onCancel={() => this.setState({ isDatePickerVisible: false })}
           onConfirm={this.handleDatePicked}

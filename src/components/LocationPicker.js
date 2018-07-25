@@ -2,7 +2,7 @@ import * as React from 'react';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import LinearGradient from 'react-native-linear-gradient';
 import styled from 'styled-components/native';
-import { Platform } from 'react-native';
+import { Platform, Animated, Keyboard } from 'react-native';
 import Modal from 'react-native-modal';
 
 import Input from './Input';
@@ -19,18 +19,17 @@ border-radius: 10px;
   padding: 24px;  
 `;
 
-const ModalTitle = styled.Text`
+const ModalTitle = styled(Animated.Text)`
   color: ${props => props.theme.colors.secondaryColor};
   font-weight: bold;
   font-size: 28;
   padding-top: 24;
 `;
 
-const CloseAction = styled.TouchableOpacity`  
+const CloseAction = styled.TouchableOpacity`
   justify-content: center;
-  align-items: center;
-  margin-bottom: 12;
-  margin-top: 6;
+  align-items: center;  
+  margin: 8px 0 24px 0;
   width: 20;
   height: 20;
 `;
@@ -39,8 +38,8 @@ const CloseIcon = styled.Image.attrs({
   source: IMAGES.CLOSE,
 })`
   tint-color: white;
-  height: 20;
   width: 20;
+  height: 20;
 `;
 
 const IsLoadingContainer = styled.View`
@@ -84,8 +83,60 @@ type Props = {
 @withContext class LocationPicker extends React.Component<Props, State> {
   state = {
     isLoading: false,
+    modalTitleDisplayType: 'flex',
     zipCode: '',
     number: '',
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.modalTitleOpacity = new Animated.Value(1);
+  }
+
+  componentWillMount() {
+    if (Platform.OS === 'ios') {
+      this.keyboardWillShowSubscription = Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
+      this.keyboardWillHideSubscription = Keyboard.addListener('keyboardWillHide', this.onKeyboardHide);
+    } else {
+      this.keyboardDidShowSubscription = Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
+      this.keyboardDidHideSubscription = Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
+    }
+  }
+
+  componentWillUnmount() {
+    if (Platform.OS === 'ios') {
+      this.keyboardWillShowSubscription.remove();
+      this.keyboardWillHideSubscription.remove();
+    } else {
+      this.keyboardDidShowSubscription.remove();
+      this.keyboardDidHideSubscription.remove();
+    }
+  }
+
+  onKeyboardShow = () => {
+    Animated.timing(this.modalTitleOpacity, {
+      duration: 250,
+      toValue: 0,
+    }).start(() => {
+      this.setState({
+        modalTitleDisplayType: 'none',
+      });
+    });
+  };
+
+  onKeyboardHide = () => {
+    this.setState(
+      {
+        modalTitleDisplayType: 'flex',
+      },
+      () => {
+        Animated.timing(this.modalTitleOpacity, {
+          duration: 450,
+          toValue: 1,
+        }).start();
+      },
+    );
   };
 
   async onSearchLocation() {
@@ -119,30 +170,39 @@ type Props = {
     </IsLoadingContainer>
   );
 
-  renderForm = onClosePicker => (
-    <React.Fragment>
-      <CloseAction onPress={() => onClosePicker()}>
-        <CloseIcon />
-      </CloseAction>
-      <ModalTitle>Set the location of the event</ModalTitle>
-      <Input
-        mask="[00000]-[000]"
-        value={this.state.zipCode}
-        placeholder="Zip Code"
-        onChangeText={(zipCode: string) => this.setState({ zipCode })}
-      />
-      <Input
-        value={this.state.number}
-        placeholder="Number"
-        onChangeText={(number: string) => this.setState({ number })}
-      />
-      <ActionButtonContainer>
-        <ActionButton onPress={() => this.onSearchLocation()}>
-          <ActionButtonText>Pick Location</ActionButtonText>
-        </ActionButton>
-      </ActionButtonContainer>
-    </React.Fragment>
-  );
+  renderForm = onClosePicker => {
+    const { modalTitleOpacity, state } = this;
+    const { modalTitleDisplayType } = state;
+
+    return (
+      <React.Fragment>
+        <CloseAction onPress={() => onClosePicker()}>
+          <CloseIcon />
+        </CloseAction>
+        <ModalTitle style={{ display: modalTitleDisplayType, opacity: modalTitleOpacity }}>
+          Set the location of the event
+        </ModalTitle>
+        <Input
+          autoCorrect={false}
+          mask="[00000]-[000]"
+          value={this.state.zipCode}
+          placeholder="Zip Code"
+          onChangeText={(zipCode: string) => this.setState({ zipCode })}
+        />
+        <Input
+          autoCorrect={false}
+          value={this.state.number}
+          placeholder="Number"
+          onChangeText={(number: string) => this.setState({ number })}
+        />
+        <ActionButtonContainer>
+          <ActionButton onPress={() => this.onSearchLocation()}>
+            <ActionButtonText>Pick Location</ActionButtonText>
+          </ActionButton>
+        </ActionButtonContainer>
+      </React.Fragment>
+    );
+  };
 
   render() {
     const { isVisible, onClosePicker } = this.props;

@@ -12,7 +12,7 @@ const InputWrapper = styled.View`
 
 const RegisterTextInput = styled.TextInput.attrs({
   placeholderTextColor: props => props.theme.colors.secondaryColor,
-  underlineColorAndroid: props => props.theme.colors.secondaryColor,
+  underlineColorAndroid: 'rgba(0,0,0,0)',
   selectionColor: props => props.theme.colors.secondaryColor,
   autoCapitalize: 'none',
 })`

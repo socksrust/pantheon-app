@@ -1,5 +1,5 @@
 // @flow
-import { StackNavigator, DrawerNavigator, SwitchNavigator } from 'react-navigation';
+import { createStackNavigator, createDrawerNavigator, createSwitchNavigator } from 'react-navigation';
 //ROUTES HELPER
 import { ROUTENAMES } from './RouteNames';
 // Authentications
@@ -11,7 +11,7 @@ import EventsScreen from '../screens/Events/EventsScreen';
 import EventAdd from '../screens/Event/EventAdd';
 import EventDetails from '../screens/Event/EventDetails';
 
-const NonLoggedAppRouter = StackNavigator(
+const NonLoggedAppRouter = createStackNavigator(
   {
     [ROUTENAMES.AUTH]: { screen: AuthScreen },
     [ROUTENAMES.LOGIN]: { screen: LoginScreen },
@@ -25,10 +25,10 @@ const NonLoggedAppRouter = StackNavigator(
   },
 );
 
-const LoggedAppRouter = StackNavigator(
+const LoggedAppRouter = createStackNavigator(
   {
     InnerAppDrawer: {
-      screen: DrawerNavigator({
+      screen: createDrawerNavigator({
         [ROUTENAMES.EVENTS]: { screen: EventsScreen },
         [ROUTENAMES.EVENT_ADD]: { screen: EventAdd },
       }),
@@ -46,7 +46,7 @@ const LoggedAppRouter = StackNavigator(
 );
 
 export const createRootNavigator = (token: string) =>
-  SwitchNavigator(
+  createSwitchNavigator(
     {
       [ROUTENAMES.LOGGED_APP]: LoggedAppRouter,
       [ROUTENAMES.NON_LOGGED_APP]: NonLoggedAppRouter,

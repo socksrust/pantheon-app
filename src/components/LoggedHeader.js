@@ -11,10 +11,11 @@ const Wrapper = styled(LinearGradient).attrs({
 })`
   flex-direction: column;
   justify-content: center;
-  padding-top: 36px;
+  padding-top: 34px;
   padding-horizontal: 18;
-  padding-bottom: 20;
-`;
+  padding-left: 50px;
+  padding-bottom: 20px;
+  `;
 
 const PillsContainer = styled.ScrollView.attrs({
   horizontal: true,
@@ -65,7 +66,8 @@ const SearchInput = styled.TextInput.attrs({
   font-size: 30;
   font-weight: bold;
   color: #FFF;
-  width: 280;
+  width: 260;
+  padding-top: 0px;
 `;
 
 const Icon = styled.Image.attrs({
@@ -111,12 +113,7 @@ const LoggedHeader = ({
   <Wrapper>
     <SafeAreaView />
     <TitleAndIcon>
-      {!IsSearchVisible
-        ? <Title>{title}</Title>
-        : <SearchInput
-            value={searchValue}
-            onChangeText={onChangeSearch}
-          />}
+      {!IsSearchVisible ? <Title>{title}</Title> : <SearchInput value={searchValue} onChangeText={onChangeSearch} />}
       <Button onPress={showSearch}>
         <Icon visible={IsSearchVisible} />
       </Button>

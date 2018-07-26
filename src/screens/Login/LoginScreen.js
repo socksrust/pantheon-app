@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, Animated, Keyboard, Platform } from 'react-native';
 
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
@@ -9,6 +9,7 @@ import { withNavigation } from 'react-navigation';
 import Header from '../../components/common/Header';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import CustomKeyboard from '../../components/CustomKeyboard';
 import LoginMutation from './LoginEmailMutation';
 
 import { IMAGES } from '../../utils/design/images';
@@ -16,32 +17,31 @@ import { ROUTENAMES } from '../../navigation/RouteNames';
 import GradientWrapper from '../../components/GradientWrapper';
 import { withContext } from '../../Context';
 
-const ForgotButton = styled.TouchableOpacity``;
+/* @todo - We'll use this later!
+const ForgotText = styled.Text`
+  color: ${props => props.theme.colors.secondaryColor};
+  font-weight: bold;
+  font-size: 20px;
+  text-align: right;
+`;*/
 
-// const ForgotText = styled.Text`
-//   color: ${props => props.theme.colors.secondaryColor};
-//   font-weight: bold;
-//   font-size: 20px;
-//   text-align: right;
-// `;
-
-const TextWrapper = styled.View`
-  flex: 3;
+const ContentWrapper = styled.View`
+  z-index: 3;
+  flex: 1;
 `;
 
-const BigText = styled.Text`
-  color: ${props => props.theme.colors.secondaryColor};
+const FormWrapper = styled(Animated.View)``;
+
+const ForgotButton = styled.TouchableOpacity`
+`;
+
+const LoginText = styled(Animated.Text)`
+  color: ${props => props.theme.colors.secondaryColor};  
   font-size: 36px;
   font-weight: bold;
-  padding: 20px 0 20px 0;
 `;
 
-const ButtonsWrapper = styled.View`
-  flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
-  z-index: 3;
-`;
+const ButtonsWrapper = styled(Animated.View)``;
 
 const BottomFixedReactLogo = styled.Image.attrs({
   source: IMAGES.REACT,
@@ -51,14 +51,14 @@ const BottomFixedReactLogo = styled.Image.attrs({
   position: absolute;
   right: -100;
   bottom: -90;
-  tint-color: rgba(0, 0, 0, 0.1);
+  tint-color: rgba(0,0,0,0.1);
   z-index: 1;
 `;
 
 const ButtonText = styled.Text`
   color: ${props => (!props.error ? props.theme.colors.primaryColor : props.theme.colors.errorViewColor)};
   font-size: 24px;
-  font-weight: bold;
+  font-weight: bold
 `;
 
 const Arrow = styled.Image.attrs({
@@ -81,12 +81,92 @@ type State = {
   errorText: string,
 };
 
-@withNavigation
-class LoginScreen extends Component<Props, State> {
+@withNavigation class LoginScreen extends Component<Props, State> {
   state = {
+    loginTextDisplayType: 'flex',
     email: '',
     password: '',
     errorText: '',
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.buttonWrapperMarginTop = new Animated.Value(84);
+    this.formWrapperMarginTop = new Animated.Value(36);
+    this.loginTextVisibility = new Animated.Value(1);
+  }
+
+  componentWillMount() {
+    if (Platform.OS === 'ios') {
+      this.keyboardWillShowSubscription = Keyboard.addListener('keyboardWillShow', this.onKeyboardShow);
+      this.keyboardWillHideSubscription = Keyboard.addListener('keyboardWillHide', this.onKeyboardHide);
+    } else {
+      this.keyboardDidShowSubscription = Keyboard.addListener('keyboardDidShow', this.onKeyboardShow);
+      this.keyboardDidHideSubscription = Keyboard.addListener('keyboardDidHide', this.onKeyboardHide);
+    }
+  }
+
+  componentWillUnmount() {
+    if (Platform.OS === 'ios') {
+      this.keyboardWillShowSubscription.remove();
+      this.keyboardWillHideSubscription.remove();
+    } else {
+      this.keyboardDidShowSubscription.remove();
+      this.keyboardDidHideSubscription.remove();
+    }
+  }
+
+  onKeyboardShow = () => {
+    Animated.parallel([
+      Animated.timing(this.loginTextVisibility, {
+        duration: 200,
+        toValue: 0,
+      }),
+
+      Animated.timing(this.buttonWrapperMarginTop, {
+        duration: 200,
+        toValue: Platform.OS === 'ios' ? 36 : 18,
+      }),
+    ]).start();
+
+    this.setState(
+      {
+        loginTextDisplayType: 'none',
+      },
+      () => {
+        Animated.timing(this.formWrapperMarginTop, {
+          duration: 200,
+          toValue: -5,
+        }).start();
+      },
+    );
+  };
+
+  onKeyboardHide = () => {
+    Animated.parallel([
+      Animated.timing(this.loginTextVisibility, {
+        duration: 200,
+        toValue: 1,
+      }),
+
+      Animated.timing(this.buttonWrapperMarginTop, {
+        duration: 200,
+        toValue: 64,
+      }),
+    ]).start();
+
+    this.setState(
+      {
+        loginTextDisplayType: 'flex',
+      },
+      () => {
+        Animated.timing(this.formWrapperMarginTop, {
+          duration: 200,
+          toValue: 36,
+        }).start();
+      },
+    );
   };
 
   handleLoginPress = async () => {
@@ -131,28 +211,32 @@ class LoginScreen extends Component<Props, State> {
 
   render() {
     const { navigation, context } = this.props;
+    const { loginTextDisplayType } = this.state;
     const { errorText } = context;
 
     return (
-      <GradientWrapper error={errorText ? true : false}>
-        <Header>
-          <ForgotButton onPress={() => navigation.pop()}>
-            <Arrow />
-          </ForgotButton>
-          <ForgotButton>{/*<ForgotText>Forgot Password</ForgotText>*/}</ForgotButton>
-        </Header>
-        <TextWrapper>
-          <BigText>Login</BigText>
-          <Input placeholder="Email" onChangeText={text => this.setState({ email: text })} />
-          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
-        </TextWrapper>
-        <ButtonsWrapper>
-          <Button fill onPress={this.handleLoginPress}>
-            <ButtonText error={errorText ? true : false}>Login</ButtonText>
-          </Button>
-        </ButtonsWrapper>
-        <BottomFixedReactLogo />
-      </GradientWrapper>
+      <CustomKeyboard>
+        <GradientWrapper error={errorText ? true : false}>
+          <Header>
+            <ForgotButton onPress={() => navigation.pop()}>
+              <Arrow />
+            </ForgotButton>
+          </Header>
+          <ContentWrapper>
+            <LoginText style={{ display: loginTextDisplayType, opacity: this.loginTextVisibility }}>Login</LoginText>
+            <FormWrapper style={{ marginTop: this.formWrapperMarginTop }}>
+              <Input placeholder="Email" autoCorrect={false} onChangeText={text => this.setState({ email: text })} />
+              <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
+            </FormWrapper>
+            <ButtonsWrapper style={{ marginTop: this.buttonWrapperMarginTop }}>
+              <Button fill onPress={this.handleLoginPress}>
+                <ButtonText error={errorText ? true : false}>Login</ButtonText>
+              </Button>
+            </ButtonsWrapper>
+          </ContentWrapper>
+          <BottomFixedReactLogo />
+        </GradientWrapper>
+      </CustomKeyboard>
     );
   }
 }

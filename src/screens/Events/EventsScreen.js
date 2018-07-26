@@ -18,6 +18,7 @@ import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
 import DateModal from './DateModal';
+import MenuButton from '../../components/MenuButton';
 
 const TOTAL_REFETCH_ITEMS = 10;
 
@@ -187,7 +188,7 @@ class EventsScreen extends Component<Props, State> {
   };
 
   render() {
-    const { query } = this.props;
+    const { query, navigation } = this.props;
     const {
       search,
       IsSearchVisible,
@@ -212,6 +213,7 @@ class EventsScreen extends Component<Props, State> {
           distance={distance}
           days={days}
         />
+        <MenuButton onPress={() => navigation.openDrawer()} />
         <FlatList
           data={idx(query, _ => _.events.edges) || []}
           keyExtractor={item => item.node.id}
@@ -221,7 +223,7 @@ class EventsScreen extends Component<Props, State> {
           onEndReached={this.onEndReached}
           ListEmptyComponent={<EmptyView text="Você não possui eventos próximos" />}
         />
-        <ActionButton onPress={() => this.props.navigation.navigate(ROUTENAMES.EVENT_ADD)} />
+        <ActionButton onPress={() => navigation.navigate(ROUTENAMES.EVENT_ADD)} />
         <DistanceModal
           isVisible={isDistanceModalVisible}
           distance={distance}

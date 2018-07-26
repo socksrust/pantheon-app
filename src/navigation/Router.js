@@ -1,4 +1,5 @@
 // @flow
+import { Dimensions } from 'react-native';
 import { createStackNavigator, createDrawerNavigator, createSwitchNavigator } from 'react-navigation';
 //ROUTES HELPER
 import { ROUTENAMES } from './RouteNames';
@@ -25,23 +26,30 @@ const NonLoggedAppRouter = createStackNavigator(
   },
 );
 
-const LoggedAppRouter = createStackNavigator(
+const EventRouters = createStackNavigator(
   {
-    InnerAppDrawer: {
-      screen: createDrawerNavigator({
-        [ROUTENAMES.EVENTS]: { screen: EventsScreen },
-        [ROUTENAMES.EVENT_ADD]: { screen: EventAdd },
-      }),
-    },
     [ROUTENAMES.EVENTS]: { screen: EventsScreen },
     [ROUTENAMES.EVENT_ADD]: { screen: EventAdd },
     [ROUTENAMES.EVENT_DETAILS]: { screen: EventDetails },
+  },
+  {
+    navigationOptions: {
+      header: null,
+    },
+  },
+);
+
+const { width, height } = Dimensions.get('screen');
+const LoggedAppRouter = createDrawerNavigator(
+  {
+    [ROUTENAMES.EVENTS]: EventRouters,
   },
   {
     initialRouteName: ROUTENAMES.EVENTS,
     navigationOptions: {
       header: null,
     },
+    drawerWidth: Math.min(height, width) * 0.6,
   },
 );
 

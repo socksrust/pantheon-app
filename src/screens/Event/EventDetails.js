@@ -201,13 +201,11 @@ class EventDetails extends Component<Props, State> {
       eventId,
     };
 
-    const onError = (err: string) => {
-      console.log(err);
+    const onError = () => {
       this.props.context.openModal('An Unexpected Error Ocurred');
     };
 
     const onCompleted = (response: Object) => {
-      console.log(response);
       if (response.CantGoToEvent.error) {
         return this.props.context.openModal(response.error);
       }
@@ -225,13 +223,11 @@ class EventDetails extends Component<Props, State> {
       eventId,
     };
 
-    const onError = (err: string) => {
-      console.log(err);
+    const onError = () => {
       this.props.context.openModal('An Unexpected Error Ocurred');
     };
 
     const onCompleted = (response: Object) => {
-      console.log(response);
       if (response.AttendToEvent.error) {
         return this.props.context.openModal(response.error);
       }
@@ -270,7 +266,7 @@ class EventDetails extends Component<Props, State> {
   };
   render() {
     const { schedule, title, description, date, isEventAttended, isOwner } = this.props.query.event;
-    console.log(schedule);
+
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />
@@ -304,7 +300,7 @@ class EventDetails extends Component<Props, State> {
             <ValuesContainer>
               <Value active>WHERE</Value>
               <TouchableOpacity>
-                <Value>location && location.street && location.street.split('-')[0]</Value>
+                <Value>{location && location.street && location.street.split('-')[0]}</Value>
               </TouchableOpacity>
             </ValuesContainer>
           </DateAndLocationRow>

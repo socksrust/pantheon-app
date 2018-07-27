@@ -3,6 +3,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
+import { getStatusText, getStatusColor } from '../../utils/design/statusStyle';
 
 import { IMAGES } from '../../utils/design/images';
 
@@ -77,14 +78,14 @@ const StatusWrapper = styled.View`
   border: 1.5px solid;  
   width: 70%;
   background: ${({ theme }) => theme.colors.transparent}
-  border-color: ${props => getStatusStyle(props)}
+  border-color: ${props => getStatusColor(props)}
 `;
 
 const Status = styled.Text`
   font-weight: 800;
   font-size: 13px;
   margin: 4px 8px;
-  color: ${props => getStatusStyle(props)}
+  color: ${props => getStatusColor(props)}
 `;
 
 const LearnMoreButton = styled.TouchableOpacity`
@@ -104,30 +105,6 @@ const ArrowIcon = styled.Image.attrs({
   width: 24;
   height: 24;
 `;
-
-const getDate = rawDate => {
-  const day = rawDate.substring(0, 2);
-  const month = rawDate.substring(2, 5);
-  const year = rawDate.substring(5, rawDate.length);
-
-  return `${day}\n${month}\n${year}`;
-};
-
-const getStatusStyle = ({ isOwner, isConfirmed, isPending, theme }) => {
-  if (isOwner) return theme.colors.ownerColor;
-
-  if (isConfirmed) return theme.colors.confirmedColor;
-
-  if (isPending) return theme.colors.pendingColor;
-};
-
-const getStatusText = (isOwner, isConfirmed, isPending) => {
-  if (isOwner) return 'ORGANIZADOR';
-
-  if (isConfirmed) return 'CONFIRMADO';
-
-  if (isPending) return 'PENDENTE';
-};
 
 type User = {
   image: string,
@@ -173,12 +150,12 @@ const EventListItem = ({ title, address, date, showEventDetails, isOwner, isEven
   const isOwnerValue = isOwner === 'true';
   const isConfirmed = isEventAttended;
   const isPending = !isEventAttended;
-
+  console.log(date);
   return (
     <CardContainer>
       <ContentWrapper>
         <Date>
-          {getDate(moment(date).format('DD\nMMM\nYYYY'))}
+          {moment(date).format('DD[\n]MMM[\n]YYYY')}
         </Date>
         <LineSeparator />
         <InfoWrapper>

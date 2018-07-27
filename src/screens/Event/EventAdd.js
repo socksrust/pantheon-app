@@ -361,7 +361,6 @@ type Props = {
   };
 
   save = () => {
-    console.log('save');
     const { title, description, coordinates, address, date, number, cep, schedules, eventLimit } = this.state;
     const isEdit = this.props.query.event;
 
@@ -425,7 +424,7 @@ type Props = {
     const formatted = address.split('-');
 
     const isEdit = this.props.query.event;
-    console.log(isEdit);
+
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />

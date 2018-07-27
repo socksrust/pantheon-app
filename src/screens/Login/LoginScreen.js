@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage, ScrollView } from 'react-native';
+import { AsyncStorage, ScrollView, Platform } from 'react-native';
 
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
@@ -32,21 +32,10 @@ const BigText = styled.Text`
 
 const ButtonsWrapper = styled.View`
   flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
-  z-index: 3;
-`;
-
-const BottomFixedReactLogo = styled.Image.attrs({
-  source: IMAGES.REACT,
-})`
-  width: 303;
-  height: 271.39;
   position: absolute;
-  right: -100;
-  bottom: -90;
-  tint-color: rgba(0, 0, 0, 0.1);
-  z-index: 1;
+  bottom: 20;
+  left: 20;
+  right: 20;
 `;
 
 const ButtonText = styled.Text`
@@ -66,7 +55,7 @@ const Arrow = styled.Image.attrs({
 
 const KeyboardWrapper = styled.KeyboardAvoidingView.attrs({
   enabled: true,
-  behavior: 'padding',
+  behavior: Platform.OS === 'ios' ? 'padding' : 'height',
 })`
   flex: 1;
 `;
@@ -82,7 +71,7 @@ type State = {
   errorText: string,
 };
 
-@withNavigation class LoginScreen extends Component<Props, State> {
+class LoginScreen extends Component<Props, State> {
   state = {
     email: '',
     password: '',
@@ -155,11 +144,10 @@ type State = {
               <ButtonText error={errorText ? true : false}>Login</ButtonText>
             </Button>
           </ButtonsWrapper>
-          <BottomFixedReactLogo />
         </GradientWrapper>
       </KeyboardWrapper>
     );
   }
 }
 
-export default withContext(LoginScreen);
+export default withContext(withNavigation(LoginScreen));

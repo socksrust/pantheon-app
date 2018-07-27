@@ -105,9 +105,11 @@ export const getInitials = (name: string) => {
   return name ? name.split(' ').slice(0, 2).map(namePart => namePart.charAt(0).toUpperCase()).join('') : '';
 };
 
-const EventCard = ({ atendees, title, address, date, seeButtonAction }: Props) => {
+const EventCard = ({ atendees, title, address, date, showEventDetails }: Props) => {
+  console.log(atendees);
+  // console.log(atendees, title, address, date, seeButtonAction)
   return (
-    <MakeTouchable onPress={seeButtonAction}>
+    <MakeTouchable onPress={showEventDetails}>
       <Wrapper>
         <Row>
           <DateText>

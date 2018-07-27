@@ -13,7 +13,7 @@ import { withNavigation } from 'react-navigation';
 
 import LoggedHeader from '../../components/LoggedHeader';
 import ActionButton from '../../components/ActionButton';
-import EventCard from '../../components/EventCardMVP';
+import EventListItem from '../Event/EventListItem';
 import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
@@ -170,17 +170,24 @@ class EventsScreen extends Component<Props, State> {
   };
 
   renderItem = ({ item }) => {
-    const { node } = item;
-    const splittedAddress = node.location.street.split('-');
+    const { navigation } = this.props;
+    const { isEventAttended, publicList, location, isOwner, title, date, id } = item.node;
+
+    const splittedAddress = location.street.split('-');
+
+    // EventCard  EventListItem
     return (
-      <EventCard
-        atendees={node.publicList}
-        title={node.title}
+      <EventListItem
+        isEventAttended={isEventAttended}
+        userId={id}
+        atendees={publicList}
+        isOwner={isOwner}
+        title={title}
         address={splittedAddress[0]}
-        date={node.date}
-        seeButtonAction={() =>
-          this.props.navigation.navigate(ROUTENAMES.EVENT_DETAILS, {
-            id: node.id,
+        date={date}
+        showEventDetails={() =>
+          navigation.navigate(ROUTENAMES.EVENT_DETAILS, {
+            id,
           })}
       />
     );
@@ -221,7 +228,7 @@ class EventsScreen extends Component<Props, State> {
           onEndReached={this.onEndReached}
           ListEmptyComponent={<EmptyView text="Você não possui eventos próximos" />}
         />
-        <ActionButton onPress={() => this.props.navigation.navigate(ROUTENAMES.EVENT_ADD)} />
+        <ActionButton onPress={() => this.props.navigation.navigate(ROUTENAMES.EVENT_DETAILS)} />
         <DistanceModal
           isVisible={isDistanceModalVisible}
           distance={distance}
@@ -261,11 +268,13 @@ const EventsScreenRefetchContainer = createRefetchContainer(
           edges {
             node {
               id
+              isOwner
               schedule {
                 title
                 talker
                 time
               }
+              isEventAttended
               title
               date
               location {
@@ -273,6 +282,7 @@ const EventsScreenRefetchContainer = createRefetchContainer(
               }
               publicList {
                 name
+                id
               }
             }
           }

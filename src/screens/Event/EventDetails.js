@@ -50,7 +50,7 @@ const HeaderButton = styled.TouchableOpacity`
 const CloseIcon = styled.Image.attrs({
   source: IMAGES.ARROW,
 })`
-  width: 30;
+  width: 24;
   height: 24;
   tint-color: white;
 `;
@@ -269,8 +269,8 @@ class EventDetails extends Component<Props, State> {
     );
   };
   render() {
-    const { schedule, title, description, date, location, isEventAttended, isOwner } = this.props.query.event;
-
+    const { schedule, title, description, date, isEventAttended, isOwner } = this.props.query.event;
+    console.log(schedule);
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />
@@ -304,7 +304,7 @@ class EventDetails extends Component<Props, State> {
             <ValuesContainer>
               <Value active>WHERE</Value>
               <TouchableOpacity>
-                <Value>{location && location.street && location.street.split('-')[0]}</Value>
+                <Value>location && location.street && location.street.split('-')[0]</Value>
               </TouchableOpacity>
             </ValuesContainer>
           </DateAndLocationRow>

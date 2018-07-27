@@ -39,27 +39,16 @@ const BigText = styled.Text`
 
 const ButtonsWrapper = styled.View`
   flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
-  z-index: 3;
+  position: absolute;
+  bottom: 20;
+  left: 20;
+  right: 20;
 `;
 
 const ButtonText = styled.Text`
   color: ${props => (!props.error ? props.theme.colors.primaryColor : props.theme.colors.errorViewColor)};
   font-size: 24px;
   font-weight: bold;
-`;
-
-const BottomFixedReactLogo = styled.Image.attrs({
-  source: IMAGES.REACT,
-})`
-  width: 303;
-  height: 271.39;
-  position: absolute;
-  right: -100;
-  bottom: -90;
-  tint-color: rgba(0, 0, 0, 0.1);
-  z-index: 1;
 `;
 
 const Arrow = styled.Image.attrs({
@@ -73,7 +62,7 @@ const Arrow = styled.Image.attrs({
 
 const KeyboardWrapper = styled.KeyboardAvoidingView.attrs({
   enabled: true,
-  behavior: 'padding',
+  behavior: Platform.OS === 'ios' ? 'padding' : 'height',
 })`
   flex: 1;
 `;
@@ -90,7 +79,7 @@ type State = {
   errorText: string,
 };
 
-@withNavigation class RegisterScreen extends Component<Props, State> {
+class RegisterScreen extends Component<Props, State> {
   state = {
     name: '',
     email: '',
@@ -158,18 +147,17 @@ type State = {
                 onChangeText={text => this.setState({ password: text })}
               />
             </TextWrapper>
-            {Platform.OS === 'ios' && <KeyboardSpacer />}
+            <KeyboardSpacer />
           </ScrollView>
           <ButtonsWrapper>
             <Button fill onPress={this.handleRegisterPress}>
               <ButtonText error={errorText ? true : false}>Create an Account</ButtonText>
             </Button>
           </ButtonsWrapper>
-          <BottomFixedReactLogo />
         </GradientWrapper>
       </KeyboardWrapper>
     );
   }
 }
 
-export default withContext(RegisterScreen);
+export default withContext(withNavigation(RegisterScreen));

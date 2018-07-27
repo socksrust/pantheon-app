@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, ScrollView, Platform } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 import { withContext } from '../../Context';
@@ -11,6 +11,7 @@ import Header from '../../components/common/Header';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import RegisterMutation from './RegisterEmailMutation';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import { IMAGES } from '../../utils/design/images';
 import { ROUTENAMES } from '../../navigation/RouteNames';
@@ -38,27 +39,16 @@ const BigText = styled.Text`
 
 const ButtonsWrapper = styled.View`
   flex: 1;
-  justify-content: flex-end;
-  padding-horizontal: 5;
-  z-index: 3;
+  position: absolute;
+  bottom: 20;
+  left: 20;
+  right: 20;
 `;
 
 const ButtonText = styled.Text`
   color: ${props => (!props.error ? props.theme.colors.primaryColor : props.theme.colors.errorViewColor)};
   font-size: 24px;
   font-weight: bold;
-`;
-
-const BottomFixedReactLogo = styled.Image.attrs({
-  source: IMAGES.REACT,
-})`
-  width: 303;
-  height: 271.39;
-  position: absolute;
-  right: -100;
-  bottom: -90;
-  tint-color: rgba(0, 0, 0, 0.1);
-  z-index: 1;
 `;
 
 const Arrow = styled.Image.attrs({
@@ -68,6 +58,13 @@ const Arrow = styled.Image.attrs({
   height: 24;
   margin-top: 5;
   tint-color: ${props => props.theme.colors.secondaryColor};
+`;
+
+const KeyboardWrapper = styled.KeyboardAvoidingView.attrs({
+  enabled: true,
+  behavior: Platform.OS === 'ios' ? 'padding' : 'height',
+})`
+  flex: 1;
 `;
 
 type Props = {
@@ -82,7 +79,6 @@ type State = {
   errorText: string,
 };
 
-@withNavigation
 class RegisterScreen extends Component<Props, State> {
   state = {
     name: '',
@@ -129,30 +125,39 @@ class RegisterScreen extends Component<Props, State> {
     const { errorText } = context;
 
     return (
-      <GradientWrapper error={errorText ? true : false}>
-        <Header>
-          <ForgotButton onPress={() => navigation.pop()}>
-            <Arrow />
-          </ForgotButton>
-          <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
-            <ForgotText>Login</ForgotText>
-          </ForgotButton>
-        </Header>
-        <TextWrapper>
-          <BigText>Create an Account</BigText>
-          <Input placeholder="Name" onChangeText={text => this.setState({ name: text })} />
-          <Input placeholder="Email" onChangeText={text => this.setState({ email: text })} />
-          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
-        </TextWrapper>
-        <ButtonsWrapper>
-          <Button fill onPress={this.handleRegisterPress}>
-            <ButtonText error={errorText ? true : false}>Create an Account</ButtonText>
-          </Button>
-        </ButtonsWrapper>
-        <BottomFixedReactLogo />
-      </GradientWrapper>
+      <KeyboardWrapper>
+        <GradientWrapper error={errorText ? true : false}>
+          <Header>
+            <ForgotButton onPress={() => navigation.pop()}>
+              <Arrow />
+            </ForgotButton>
+            <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
+              <ForgotText>Login</ForgotText>
+            </ForgotButton>
+          </Header>
+          <ScrollView>
+            <TextWrapper>
+              <BigText>Create an Account</BigText>
+              <Input placeholder="Name" autoCorrect={false} onChangeText={text => this.setState({ name: text })} />
+              <Input placeholder="Email" autoCorrect={false} onChangeText={text => this.setState({ email: text })} />
+              <Input
+                placeholder="Password"
+                autoCorrect={false}
+                secureTextEntry
+                onChangeText={text => this.setState({ password: text })}
+              />
+            </TextWrapper>
+            <KeyboardSpacer />
+          </ScrollView>
+          <ButtonsWrapper>
+            <Button fill onPress={this.handleRegisterPress}>
+              <ButtonText error={errorText ? true : false}>Create an Account</ButtonText>
+            </Button>
+          </ButtonsWrapper>
+        </GradientWrapper>
+      </KeyboardWrapper>
     );
   }
 }
 
-export default withContext(RegisterScreen);
+export default withContext(withNavigation(RegisterScreen));

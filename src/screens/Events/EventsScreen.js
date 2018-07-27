@@ -7,7 +7,7 @@ import { createQueryRenderer } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList } from 'react-native';
+import { StatusBar, FlatList, PermissionsAndroid } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -17,11 +17,10 @@ import EventCard from '../../components/EventCardMVP';
 import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
-import DateModal from './DateModal';
 import MenuButton from '../../components/MenuButton';
 
 const TOTAL_REFETCH_ITEMS = 10;
-
+var timeOutRef;
 const Wrapper = styled.View`
   flex: 1;
   background-color: white
@@ -38,11 +37,10 @@ type State = {
   IsSearchVisible: boolean,
   coordinates: Array<number>,
   distance: number,
-  days: number,
   isDistanceModalVisible: boolean,
-  isDateModalVisible: boolean,
   isRefreshing: boolean,
   isFetchingEnd: boolean,
+  hasPosition: boolean
 };
 
 @withContext
@@ -53,15 +51,14 @@ class EventsScreen extends Component<Props, State> {
     IsSearchVisible: false,
     coordinates: [0, 0],
     distance: 80,
-    days: 7,
     isDistanceModalVisible: false,
-    isDateModalVisible: false,
     isRefreshing: false,
     isFetchingEnd: false,
+    hasPosition: false
   };
 
   changeSearchText = (search: string): void => {
-    this.refetch({ search });
+    return this.refetch({ search })
   };
 
   setVisible = () => {
@@ -70,19 +67,28 @@ class EventsScreen extends Component<Props, State> {
       IsSearchVisible: !IsSearchVisible,
       search: IsSearchVisible ? search : '',
     });
+    if (IsSearchVisible) {
+      this.refetch({search: ''});
+    }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const { context, relay } = this.props;
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
+    console.log('didMount');
+    const granted = await PermissionsAndroid.check( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION );
+    console.log('granted', granted);
+      navigator.geolocation.getCurrentPosition(
+      ({coords}) => {
+        console.log('coords', coords);
         const coordinates = [coords.longitude, coords.latitude];
-        this.setState({ coordinates });
+        this.setState({coordinates});
+
+        relay.refetch({coordinates, distance: 80, first: 10});
       },
-      error => context.openModal(error.message),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+      error => console.log('error', error),
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
     );
-    relay.refetch();
+    
   }
 
   changeDistance(distance) {
@@ -90,40 +96,34 @@ class EventsScreen extends Component<Props, State> {
     return this.setState({ isDistanceModalVisible: false });
   }
 
-  setDate(days) {
-    this.refetch({ days });
-    return this.setState({ isDateModalVisible: false });
-  }
-
   onRefresh = () => {
     this.refetch();
   };
 
   refetch = newRefetchVariable => {
-    const { isRefreshing, search, distance, days, coordinates } = this.state;
+    const { isRefreshing, search, distance, coordinates } = this.state;
+    this.setState({ isRefreshing: true });
+    newRefetchVariable && this.setState(newRefetchVariable);
 
     if (isRefreshing) return;
-
-    this.setState({ isRefreshing: true });
-
     const refetchVariables = fragmentVariables => ({
       ...fragmentVariables,
       search,
       distance,
-      days,
       coordinates,
       ...newRefetchVariable,
     });
+
+    console.log('newRefetchVariable', newRefetchVariable);
     this.props.relay.refetch(
       refetchVariables,
       null,
-      () => {
+      () =>
         this.setState({
           isRefreshing: false,
           isFetchingEnd: false,
-        });
-        newRefetchVariable && this.setState(newRefetchVariable);
-      },
+          hasPosition: true,
+        }),
       {
         force: true,
       },
@@ -148,11 +148,11 @@ class EventsScreen extends Component<Props, State> {
     const total = events.edges.length + TOTAL_REFETCH_ITEMS;
     const refetchVariables = fragmentVariables => ({
       ...fragmentVariables,
-      count: TOTAL_REFETCH_ITEMS,
+      first: TOTAL_REFETCH_ITEMS,
       cursor: endCursor,
     });
     const renderVariables = {
-      count: total,
+      first: total,
     };
 
     this.props.relay.refetch(
@@ -195,8 +195,8 @@ class EventsScreen extends Component<Props, State> {
       distance,
       isDistanceModalVisible,
       isRefreshing,
-      days,
-      isDateModalVisible,
+      hasPosition,
+      coordinates
     } = this.state;
 
     return (
@@ -209,13 +209,11 @@ class EventsScreen extends Component<Props, State> {
           showSearch={this.setVisible}
           onChangeSearch={search => this.changeSearchText(search)}
           openDistanceModal={() => this.setState({ isDistanceModalVisible: true })}
-          openDateModal={() => this.setState({ isDateModalVisible: true })}
           distance={distance}
-          days={days}
         />
         <MenuButton onPress={() => navigation.openDrawer()} />
         <FlatList
-          data={idx(query, _ => _.events.edges) || []}
+          data={coordinates.latitude !== 0 ? idx(query, _ => _.events.edges) : []}
           keyExtractor={item => item.node.id}
           renderItem={this.renderItem}
           onRefresh={this.onRefresh}
@@ -230,11 +228,6 @@ class EventsScreen extends Component<Props, State> {
           changeDistance={distance => this.changeDistance(distance)}
           closeDistanceModal={() => this.setState({ isDistanceModalVisible: false })}
         />
-        <DateModal
-          isVisible={isDateModalVisible}
-          setDate={days => this.setDate(days)}
-          closeDateModal={() => this.setState({ isDateModalVisible: false })}
-        />
       </Wrapper>
     );
   }
@@ -248,17 +241,15 @@ const EventsScreenRefetchContainer = createRefetchContainer(
           search: { type: String }
           coordinates: { type: "[Float]" }
           distance: { type: Int }
-          days: { type: Int }
-          count: { type: Int, defaultValue: 10 }
+          first: { type: Int, defaultValue: 10 }
           cursor: { type: String }
         ) {
         events(
-          first: $count,
+          first: $first,
           after: $cursor
           search: $search,
           coordinates: $coordinates,
           distance: $distance
-          days: $days
         ) @connection(key: "EventsScreen_events", filters: []) {
           edges {
             node {
@@ -284,21 +275,19 @@ const EventsScreenRefetchContainer = createRefetchContainer(
   },
   graphql`
     query EventsScreenRefetchQuery(
-      $count: Int
+      $first: Int
       $cursor: String
       $search: String
       $coordinates: [Float]
       $distance: Int
-      $days: Int
       ) {
       ...EventsScreen_query
       @arguments(
-        count: $count,
+        first: $first,
         cursor: $cursor,
         search: $search,
         coordinates: $coordinates,
         distance: $distance
-        days: $days
       )
     }
   `,
@@ -310,4 +299,7 @@ export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
       ...EventsScreen_query
     }
   `,
+  variables: {
+    first: 10,
+  }
 });

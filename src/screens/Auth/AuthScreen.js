@@ -11,7 +11,6 @@ import Button from '../../components/Button';
 import { IMAGES } from '../../utils/design/images';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import GradientWrapper from '../../components/GradientWrapper';
-
 const LoginButton = styled.TouchableOpacity`
   flex: 1;
   justify-content: center;
@@ -28,6 +27,8 @@ const LoginText = styled.Text`
 const TextWrapper = styled.View`
   flex: 2;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
 `;
 
 const BigText = styled.Text`
@@ -69,18 +70,16 @@ const FacebookButtonText = styled.Text`
 `;
 
 const ButtonText = styled.Text`
-  color: ${props => props.theme.colors.secondaryColor};
+  color: ${props => props.fill ? props.theme.colors.primaryColor : props.theme.colors.secondaryColor};
   font-size: 20px;
   font-weight: 600;
 `;
 
-const AnimatedImage = styled(Animated.Image).attrs({
-  source: IMAGES.REACT,
+const PantheonLogo = styled.Image.attrs({
+  source: IMAGES.LOGO,
 })`
-  width: 25;
-  height: 22;
-  tint-color: ${props => props.theme.colors.secondaryColor};
-  margin-top: 34px;
+  width: 150px;
+  height: 150px;
 `;
 
 type Props = {};
@@ -116,19 +115,8 @@ export default class AuthScreen extends Component<Props, State> {
 
     return (
       <GradientWrapper>
-        <Header>
-          <LoginButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
-            <LoginText>Login</LoginText>
-          </LoginButton>
-        </Header>
         <TextWrapper>
-          <BigText>C</BigText>
-          <AnimatedImage
-            style={{
-              transform: [{ rotate: spin }],
-            }}
-          />
-          <BigText>nference</BigText>
+          <PantheonLogo />
         </TextWrapper>
         <ButtonsWrapper>
           {/*
@@ -139,6 +127,9 @@ export default class AuthScreen extends Component<Props, State> {
         */}
           <Button onPress={() => navigation.navigate(ROUTENAMES.REGISTER)}>
             <ButtonText>Create an Account</ButtonText>
+          </Button>
+          <Button fill onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
+            <ButtonText fill>Login</ButtonText>
           </Button>
         </ButtonsWrapper>
         <BottomFixedReactLogo />

@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, ScrollView, Platform } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 import { withContext } from '../../Context';
@@ -11,6 +11,7 @@ import Header from '../../components/common/Header';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import RegisterMutation from './RegisterEmailMutation';
+import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 import { IMAGES } from '../../utils/design/images';
 import { ROUTENAMES } from '../../navigation/RouteNames';
@@ -70,6 +71,13 @@ const Arrow = styled.Image.attrs({
   tint-color: ${props => props.theme.colors.secondaryColor};
 `;
 
+const KeyboardWrapper = styled.KeyboardAvoidingView.attrs({
+  enabled: true,
+  behavior: 'padding',
+})`
+  flex: 1;
+`;
+
 type Props = {
   navigation: Object,
   context: ContextType,
@@ -82,8 +90,7 @@ type State = {
   errorText: string,
 };
 
-@withNavigation
-class RegisterScreen extends Component<Props, State> {
+@withNavigation class RegisterScreen extends Component<Props, State> {
   state = {
     name: '',
     email: '',
@@ -129,28 +136,38 @@ class RegisterScreen extends Component<Props, State> {
     const { errorText } = context;
 
     return (
-      <GradientWrapper error={errorText ? true : false}>
-        <Header>
-          <ForgotButton onPress={() => navigation.pop()}>
-            <Arrow />
-          </ForgotButton>
-          <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
-            <ForgotText>Login</ForgotText>
-          </ForgotButton>
-        </Header>
-        <TextWrapper>
-          <BigText>Create an Account</BigText>
-          <Input placeholder="Name" onChangeText={text => this.setState({ name: text })} />
-          <Input placeholder="Email" onChangeText={text => this.setState({ email: text })} />
-          <Input placeholder="Password" secureTextEntry onChangeText={text => this.setState({ password: text })} />
-        </TextWrapper>
-        <ButtonsWrapper>
-          <Button fill onPress={this.handleRegisterPress}>
-            <ButtonText error={errorText ? true : false}>Create an Account</ButtonText>
-          </Button>
-        </ButtonsWrapper>
-        <BottomFixedReactLogo />
-      </GradientWrapper>
+      <KeyboardWrapper>
+        <GradientWrapper error={errorText ? true : false}>
+          <Header>
+            <ForgotButton onPress={() => navigation.pop()}>
+              <Arrow />
+            </ForgotButton>
+            <ForgotButton onPress={() => navigation.navigate(ROUTENAMES.LOGIN)}>
+              <ForgotText>Login</ForgotText>
+            </ForgotButton>
+          </Header>
+          <ScrollView>
+            <TextWrapper>
+              <BigText>Create an Account</BigText>
+              <Input placeholder="Name" autoCorrect={false} onChangeText={text => this.setState({ name: text })} />
+              <Input placeholder="Email" autoCorrect={false} onChangeText={text => this.setState({ email: text })} />
+              <Input
+                placeholder="Password"
+                autoCorrect={false}
+                secureTextEntry
+                onChangeText={text => this.setState({ password: text })}
+              />
+            </TextWrapper>
+            {Platform.OS === 'ios' && <KeyboardSpacer />}
+          </ScrollView>
+          <ButtonsWrapper>
+            <Button fill onPress={this.handleRegisterPress}>
+              <ButtonText error={errorText ? true : false}>Create an Account</ButtonText>
+            </Button>
+          </ButtonsWrapper>
+          <BottomFixedReactLogo />
+        </GradientWrapper>
+      </KeyboardWrapper>
     );
   }
 }

@@ -50,7 +50,7 @@ const HeaderButton = styled.TouchableOpacity`
 const CloseIcon = styled.Image.attrs({
   source: IMAGES.ARROW,
 })`
-  width: 30;
+  width: 24;
   height: 24;
   tint-color: white;
 `;
@@ -201,13 +201,11 @@ class EventDetails extends Component<Props, State> {
       eventId,
     };
 
-    const onError = (err: string) => {
-      console.log(err);
+    const onError = () => {
       this.props.context.openModal('An Unexpected Error Ocurred');
     };
 
     const onCompleted = (response: Object) => {
-      console.log(response);
       if (response.CantGoToEvent.error) {
         return this.props.context.openModal(response.error);
       }
@@ -225,13 +223,11 @@ class EventDetails extends Component<Props, State> {
       eventId,
     };
 
-    const onError = (err: string) => {
-      console.log(err);
+    const onError = () => {
       this.props.context.openModal('An Unexpected Error Ocurred');
     };
 
     const onCompleted = (response: Object) => {
-      console.log(response);
       if (response.AttendToEvent.error) {
         return this.props.context.openModal(response.error);
       }
@@ -269,7 +265,7 @@ class EventDetails extends Component<Props, State> {
     );
   };
   render() {
-    const { schedule, title, description, date, location, isEventAttended, isOwner } = this.props.query.event;
+    const { schedule, title, description, date, isEventAttended, isOwner } = this.props.query.event;
 
     return (
       <Wrapper>

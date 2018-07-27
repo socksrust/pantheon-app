@@ -9,7 +9,7 @@ import RegisterScreen from '../screens/Register/RegisterScreen';
 // Logged Screens
 import EventsScreen from '../screens/Events/EventsScreen';
 import EventAdd from '../screens/Event/EventAdd';
-import EventDetails from '../screens/Event/EventDetails';
+import EventDetails from '../screens/Event/EventDetail';
 
 const NonLoggedAppRouter = createStackNavigator(
   {

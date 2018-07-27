@@ -424,6 +424,7 @@ type Props = {
     const formatted = address.split('-');
 
     const isEdit = this.props.query.event;
+
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />
@@ -463,6 +464,7 @@ type Props = {
             </ValuesContainer>
 
           </DateAndLocationRow>
+
           <DateAndLocationRow>
             <BiggerText active>Event Limit: </BiggerText>
             <Row>
@@ -477,6 +479,7 @@ type Props = {
               </IncreaseButtons>
             </Row>
           </DateAndLocationRow>
+
           <ScheduleList data={schedules} renderDetail={this.renderItem} />
           <Container>
             <AddButton onPress={this.setScheduleModal}>
@@ -505,6 +508,7 @@ type Props = {
           onChangeTime={(modalTime: string) => this.setState({ modalTime })}
           onChangeTalker={(modalTalker: string) => this.setState({ modalTalker })}
         />
+
         <DatePicker
           onCancel={() => this.setState({ isDatePickerVisible: false })}
           onConfirm={this.handleDatePicked}

@@ -104,30 +104,28 @@ export const getInitials = (name: string) => {
   return name ? name.split(' ').slice(0, 2).map(namePart => namePart.charAt(0).toUpperCase()).join('') : '';
 };
 
-const EventCard = ({ atendees, title, address, date, seeButtonAction }: Props) => {
-  return (
-    <MakeTouchable onPress={seeButtonAction}>
-      <Wrapper>
-        <Row>
-          <DateText>
-            {moment(date).format('DD \n MMM \n YYYY')}
-          </DateText>
-          <Separator />
-          <Container>
-            <EventAddress>{address}</EventAddress>
-            <Title>{title}</Title>
-            <AtendeesRow>
-              {atendees.map((atendee, i) => (
-                <Atendees key={i}>
-                  <AttendeesInitials>{getInitials(atendee.name)}</AttendeesInitials>
-                </Atendees>
-              ))}
-            </AtendeesRow>
-          </Container>
-        </Row>
-      </Wrapper>
-    </MakeTouchable>
-  );
-};
+const EventCard = ({ atendees, title, address, date, showEventDetails }: Props) => (
+  <MakeTouchable onPress={showEventDetails}>
+    <Wrapper>
+      <Row>
+        <DateText>
+          {moment(date).format('DD \n MMM \n YYYY')}
+        </DateText>
+        <Separator />
+        <Container>
+          <EventAddress>{address}</EventAddress>
+          <Title>{title}</Title>
+          <AtendeesRow>
+            {atendees.map((atendee, i) => (
+              <Atendees key={i}>
+                <AttendeesInitials>{getInitials(atendee.name)}</AttendeesInitials>
+              </Atendees>
+            ))}
+          </AtendeesRow>
+        </Container>
+      </Row>
+    </Wrapper>
+  </MakeTouchable>
+);
 
 export default EventCard;

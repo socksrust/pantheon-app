@@ -9,4 +9,5 @@ export const IMAGES = {
   IMAGE: require('./assets/image.png'),
   ADD: require('./assets/add.png'),
   MINUS: require('./assets/minus.png'),
+  LOGO: require('./assets/logo.png'),
 };

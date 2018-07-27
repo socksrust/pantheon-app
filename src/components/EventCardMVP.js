@@ -32,17 +32,16 @@ const Wrapper = styled(LinearGradient).attrs({
 
 const Row = styled.View`
   flex-direction: row;
-  flex: 1;
 `;
 
 const DateText = styled.Text`
   font-size: 16;
   color: white;
   font-weight: bold;
-  flex: 1;
   text-align: center;
   width: 10;
   margin: 0px 8px;
+  flex: 1;
 `;
 
 const Container = styled.View`

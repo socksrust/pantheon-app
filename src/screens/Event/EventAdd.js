@@ -67,7 +67,7 @@ const CreateButton = styled.TouchableOpacity`
   align-items: center;
   justify-content: center;
   background-color: white;
-  margin-right: -10;
+  margin-right: 10;
 `;
 
 const SmallText = styled.Text`

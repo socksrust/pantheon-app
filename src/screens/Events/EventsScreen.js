@@ -7,7 +7,7 @@ import { createQueryRenderer } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList, PermissionsAndroid } from 'react-native';
+import { StatusBar, FlatList, /*PermissionsAndroid,*/ Platform } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -19,7 +19,7 @@ import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
 
 const TOTAL_REFETCH_ITEMS = 10;
-var timeOutRef;
+
 const Wrapper = styled.View`
   flex: 1;
   background-color: white
@@ -39,7 +39,7 @@ type State = {
   isDistanceModalVisible: boolean,
   isRefreshing: boolean,
   isFetchingEnd: boolean,
-  hasPosition: boolean
+  hasPosition: boolean,
 };
 
 @withContext
@@ -53,11 +53,11 @@ class EventsScreen extends Component<Props, State> {
     isDistanceModalVisible: false,
     isRefreshing: false,
     isFetchingEnd: false,
-    hasPosition: false
+    hasPosition: false,
   };
 
   changeSearchText = (search: string): void => {
-    return this.refetch({ search })
+    return this.refetch({ search });
   };
 
   setVisible = () => {
@@ -67,30 +67,31 @@ class EventsScreen extends Component<Props, State> {
       search: IsSearchVisible ? search : '',
     });
     if (IsSearchVisible) {
-      this.refetch({search: ''});
+      this.refetch({ search: '' });
     }
   };
 
   async componentDidMount() {
-    const { context, relay } = this.props;
-    console.log('didMount');
-    const granted = await PermissionsAndroid.check( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION );
-    console.log('granted', granted);
-      navigator.geolocation.getCurrentPosition(
-      ({coords}) => {
-        console.log('coords', coords);
-        const coordinates = [coords.longitude, coords.latitude];
-        this.setState({coordinates});
+    const { relay } = this.props;
 
-        relay.refetch({coordinates, distance: 80, first: 10});
+    if (Platform.OS === 'android') {
+      // const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const coordinates = [coords.latitude, coords.longitude];
+        this.setState({ coordinates });
+
+        relay.refetch({ coordinates, distance: 80, first: 10 });
       },
       error => console.log('error', error),
       { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
     );
-    
   }
 
   changeDistance(distance) {
+    console.log('changeDistance', distance);
     this.refetch({ distance });
     return this.setState({ isDistanceModalVisible: false });
   }
@@ -100,9 +101,10 @@ class EventsScreen extends Component<Props, State> {
   };
 
   refetch = newRefetchVariable => {
+    console.log('refetch', newRefetchVariable);
     const { isRefreshing, search, distance, coordinates } = this.state;
     this.setState({ isRefreshing: true });
-    newRefetchVariable && this.setState(newRefetchVariable);
+    newRefetchVariable && this.setState({ newRefetchVariable });
 
     if (isRefreshing) return;
     const refetchVariables = fragmentVariables => ({
@@ -127,7 +129,6 @@ class EventsScreen extends Component<Props, State> {
         force: true,
       },
     );
-    
   };
 
   onEndReached = () => {
@@ -188,16 +189,9 @@ class EventsScreen extends Component<Props, State> {
   };
 
   render() {
+    console.log('render');
     const { query } = this.props;
-    const {
-      search,
-      IsSearchVisible,
-      distance,
-      isDistanceModalVisible,
-      isRefreshing,
-      hasPosition,
-      coordinates
-    } = this.state;
+    const { search, IsSearchVisible, distance, isDistanceModalVisible, isRefreshing, coordinates } = this.state;
 
     return (
       <Wrapper>
@@ -300,5 +294,5 @@ export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
   `,
   variables: {
     first: 10,
-  }
+  },
 });

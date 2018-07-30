@@ -286,6 +286,20 @@ type Props = {
     this.timer = null;
   }
 
+  componentDidMount() {
+    const isEdit = this.props.query.event;
+
+    if (isEdit) {
+      const { publicLimit } = this.props.query.event;
+
+      if (publicLimit) {
+        this.setState({
+          eventLimit: parseInt(publicLimit, 10),
+        });
+      }
+    }
+  }
+
   addOne = () => {
     this.setState({ eventLimit: this.state.eventLimit + 1 });
     this.timer = setTimeout(this.addOne, 80);
@@ -361,7 +375,7 @@ type Props = {
   };
 
   save = () => {
-    const { title, description, coordinates, address, date, number, cep, schedules, eventLimit } = this.state;
+    const { title, description, coordinates, address, date, number, cep, schedules, eventLimit, location } = this.state;
     const isEdit = this.props.query.event;
 
     let input = {
@@ -373,7 +387,7 @@ type Props = {
       location: {
         coordinates,
         cep,
-        street: address,
+        street: address || location.street,
         number,
       },
       id: idx(this, _ => _.props.navigation.state.params.id) || undefined,
@@ -399,6 +413,9 @@ type Props = {
     const { zipCode, address, lat, lng, number } = location;
 
     this.setState({
+      location: {
+        street: address,
+      },
       isLocationPickerVisible: false,
       coordinates: [lat, lng],
       address,
@@ -412,6 +429,7 @@ type Props = {
       title,
       description,
       address,
+      location,
       date,
       eventLimit,
       isDatePickerVisible,
@@ -421,9 +439,10 @@ type Props = {
       modalTime,
       modalTalker,
     } = this.state;
-    const formatted = address.split('-');
 
     const isEdit = this.props.query.event;
+    const formatted = isEdit ? location.street : address;
+
     return (
       <Wrapper>
         <StatusBar barStyle="light-content" />
@@ -458,7 +477,7 @@ type Props = {
               <TouchableOpacity
                 onPress={() => this.setState({ isLocationPickerVisible: !this.state.isLocationPickerVisible })}
               >
-                <Value>{address ? formatted[0] : 'Set a location'}</Value>
+                <Value>{location ? formatted.split('-')[0] : 'Set a location'}</Value>
               </TouchableOpacity>
             </ValuesContainer>
 
@@ -538,6 +557,7 @@ const EventAddFragmentCotnainer = createFragmentContainer(EventAdd, {
           name
         }
         isEventAttended
+        publicLimit
       }
     }
   `,

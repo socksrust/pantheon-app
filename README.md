@@ -34,7 +34,7 @@ The file [src/createRelayEnvironment.js](src/createRelayEnvironment.js) creates 
 - You also need to define it inside `variables` [UserDetail#variables](./src/UserDetail.js#L63) -->
 
 <p align="center">
-  <img width="460" height="300" src="http://www.fillmurray.com/460/300">
+  <img width="460" height="300" src="./.github/pantheon-logo.png">
 </p>
 
 ## Description

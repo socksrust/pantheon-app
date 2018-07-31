@@ -89,3 +89,41 @@ export function createQueryRenderer(
 
   return hoistStatics(QueryRendererWrapper, Component);
 }
+
+export function createQueryRendererWithCustomLoading(
+  FragmentComponent: React.ComponentType<{}>,
+  Component: React.ComponentType<{}>,
+  config: Config,
+): React.ComponentType<*> {
+  const { query, queriesParams } = config;
+
+  class QueryRendererWrapper extends React.Component<{}> {
+    render() {
+      const variables = queriesParams ? queriesParams(this.props) : config.variables;
+
+      return (
+        <QueryRenderer
+          environment={environment}
+          query={query}
+          variables={variables}
+          render={({ error, props, retry }) => {
+            if (error) {
+              return (
+                <Wrapper>
+                  <ErrorText>Please check your internet connection</ErrorText>
+                  <RetryButton onPress={retry}>
+                    <RetryText>Retry</RetryText>
+                  </RetryButton>
+                </Wrapper>
+              );
+            }
+
+            return <FragmentComponent isFetching={!props && !error} {...this.props} query={props} />;
+          }}
+        />
+      );
+    }
+  }
+
+  return hoistStatics(QueryRendererWrapper, Component);
+}

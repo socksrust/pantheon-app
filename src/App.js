@@ -1,5 +1,5 @@
 import React from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, StatusBar } from 'react-native';
 import { ThemeProvider } from 'styled-components';
 import theme from './utils/design/theme';
 import { createRootNavigator } from './navigation/Router';
@@ -33,7 +33,10 @@ class ThemedApp extends React.Component<*, State> {
     const Launch = createRootNavigator(token);
     return (
       <ThemeProvider theme={theme}>
-        <Provider>{isTokenRetrieved ? <Launch /> : null}</Provider>
+        <Provider>
+          <StatusBar backgroundColor="rgb(56,101,249)" barStyle="light-content" />
+          {isTokenRetrieved ? <Launch /> : null}
+        </Provider>
       </ThemeProvider>
     );
   }

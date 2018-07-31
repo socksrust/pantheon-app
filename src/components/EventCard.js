@@ -14,13 +14,8 @@ const Wrapper = styled.ImageBackground`
       shadow-opacity: 2px;`, android: css`
         elevation: 5;
   ` })};
-`;
-
-const CardOpacity = styled.View`
-  flex-direction: column;
-  padding: 22px 15px;
-  border-radius: 20;
-  background-color: rgba(0, 0, 0, 0.4);
+  height: 90px;
+  width: 100%;
 `;
 
 const CardDescription = styled.Text`
@@ -38,23 +33,19 @@ const CardTitle = styled.Text`
   color: white;
   margin-bottom: 5;
   margin-left: 5;
-  background-color: transparent;
 `;
 
 const Row = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  flex: 1;
 `;
 
 const ButtonContainer = styled.View`
-  flex: 1;
   flex-direction: column;
 `;
 
 const TextContainer = styled.View`
-  flex: 3;
   flex-direction: column
 `;
 
@@ -121,16 +112,6 @@ const AtendeesNumberText = styled.Text`
   color: black;
 `;
 
-const getInitials = (name: string) => {
-  return name
-    ? name
-        .split(' ')
-        .slice(0, 2)
-        .map(namePart => namePart.charAt(0).toUpperCase())
-        .join('')
-    : '';
-};
-
 type User = {
   image: string,
   name: string,
@@ -158,38 +139,6 @@ const EventCard = ({
         uri: bgImage,
       }}
     >
-      <CardOpacity>
-        <Row>
-          <TextContainer>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-            <Atendees>
-              {atendeesThumbs.map(
-                (atendee, i) =>
-                  (atendee.image
-                    ? <UserImage
-                        invading={-7}
-                        source={{
-                          uri: atendee.image,
-                        }}
-                        key={i}
-                      />
-                    : <UserInitials invading={-7}>
-                        <Initials>{getInitials(atendee.name)}</Initials>
-                      </UserInitials>)
-              )}
-              <AtendeesNumber>
-                <AtendeesNumberText>{atendees.length}</AtendeesNumberText>
-              </AtendeesNumber>
-            </Atendees>
-          </TextContainer>
-          <ButtonContainer>
-            <ReadButton onPress={seeButtonAction}>
-              <ButtonText>SEE</ButtonText>
-            </ReadButton>
-          </ButtonContainer>
-        </Row>
-      </CardOpacity>
     </Wrapper>
   );
 };

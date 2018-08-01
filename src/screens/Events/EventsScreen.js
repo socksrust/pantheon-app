@@ -3,11 +3,11 @@
 import React, { Component } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import idx from 'idx';
-import { createQueryRenderer } from '../../relay/RelayUtils';
+import { createQueryRendererWithCustomLoading } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList, PermissionsAndroid } from 'react-native';
+import { StatusBar, FlatList, PermissionsAndroid, Animated, Dimensions } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -19,16 +19,26 @@ import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
 
 const TOTAL_REFETCH_ITEMS = 10;
-var timeOutRef;
+
 const Wrapper = styled.View`
   flex: 1;
   background-color: white
+`;
+
+const { width } = Dimensions.get('window');
+
+const CardsShimmer = styled(Animated.View)`
+  height: 120;
+  width: ${width - 30};
+  border-radius: 10;
+  margin: 10px 15px;
 `;
 
 type Props = {
   navigation: Object,
   relay: Object,
   context: ContextType,
+  isFetching: boolean,
 };
 
 type State = {
@@ -39,7 +49,8 @@ type State = {
   isDistanceModalVisible: boolean,
   isRefreshing: boolean,
   isFetchingEnd: boolean,
-  hasPosition: boolean
+  hasPosition: boolean,
+  animatedValue: Animated.Value,
 };
 
 @withContext
@@ -53,11 +64,12 @@ class EventsScreen extends Component<Props, State> {
     isDistanceModalVisible: false,
     isRefreshing: false,
     isFetchingEnd: false,
-    hasPosition: false
+    hasPosition: false,
+    animatedValue: new Animated.Value(0),
   };
 
   changeSearchText = (search: string): void => {
-    return this.refetch({ search })
+    return this.refetch({ search });
   };
 
   setVisible = () => {
@@ -67,27 +79,26 @@ class EventsScreen extends Component<Props, State> {
       search: IsSearchVisible ? search : '',
     });
     if (IsSearchVisible) {
-      this.refetch({search: ''});
+      this.refetch({ search: '' });
     }
   };
 
   async componentDidMount() {
-    const { context, relay } = this.props;
-    console.log('didMount');
-    const granted = await PermissionsAndroid.check( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION );
-    console.log('granted', granted);
+    const { relay } = this.props;
+    const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+    if (granted) {
       navigator.geolocation.getCurrentPosition(
-      ({coords}) => {
-        console.log('coords', coords);
-        const coordinates = [coords.longitude, coords.latitude];
-        this.setState({coordinates});
+        ({ coords }) => {
+          const coordinates = [coords.longitude, coords.latitude];
+          this.setState({ coordinates });
 
-        relay.refetch({coordinates, distance: 80, first: 10});
-      },
-      error => console.log('error', error),
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
-    );
-    
+          relay.refetch({ coordinates, distance: 80, first: 10 });
+        },
+        //eslint-disable-next-line
+        error => console.log('error', error),
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
+      );
+    }
   }
 
   changeDistance(distance) {
@@ -96,12 +107,12 @@ class EventsScreen extends Component<Props, State> {
   }
 
   onRefresh = () => {
+    this.setState({ isRefreshing: true });
     this.refetch();
   };
 
   refetch = newRefetchVariable => {
     const { isRefreshing, search, distance, coordinates } = this.state;
-    this.setState({ isRefreshing: true });
     newRefetchVariable && this.setState(newRefetchVariable);
 
     if (isRefreshing) return;
@@ -113,7 +124,6 @@ class EventsScreen extends Component<Props, State> {
       ...newRefetchVariable,
     });
 
-    console.log('newRefetchVariable', newRefetchVariable);
     this.props.relay.refetch(
       refetchVariables,
       null,
@@ -127,7 +137,6 @@ class EventsScreen extends Component<Props, State> {
         force: true,
       },
     );
-    
   };
 
   onEndReached = () => {
@@ -170,6 +179,21 @@ class EventsScreen extends Component<Props, State> {
     );
   };
 
+  animateShimmer = () => {
+    Animated.sequence([
+      Animated.timing(this.state.animatedValue, {
+        toValue: 150,
+        duration: 500,
+      }),
+      Animated.timing(this.state.animatedValue, {
+        toValue: 0,
+        duration: 600,
+      }),
+    ]).start(() => {
+      this.animateShimmer();
+    });
+  };
+
   renderItem = ({ item }) => {
     const { node } = item;
     const splittedAddress = node.location.street.split('-');
@@ -188,16 +212,38 @@ class EventsScreen extends Component<Props, State> {
   };
 
   render() {
-    const { query } = this.props;
-    const {
-      search,
-      IsSearchVisible,
-      distance,
-      isDistanceModalVisible,
-      isRefreshing,
-      hasPosition,
-      coordinates
-    } = this.state;
+    const { query, isFetching } = this.props;
+    const { search, IsSearchVisible, distance, isDistanceModalVisible, isRefreshing, coordinates } = this.state;
+
+    if (isFetching) {
+      const interpolateColor = this.state.animatedValue.interpolate({
+        inputRange: [0, 150],
+        outputRange: ['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)'],
+      });
+
+      const shimmerStyle = {
+        backgroundColor: interpolateColor,
+      };
+
+      this.animateShimmer();
+
+      return (
+        <Wrapper>
+          <LoggedHeader
+            title="Events"
+            searchValue={search}
+            IsSearchVisible={IsSearchVisible}
+            showSearch={this.setVisible}
+            onChangeSearch={search => this.changeSearchText(search)}
+            openDistanceModal={() => this.setState({ isDistanceModalVisible: true })}
+            distance={distance}
+          />
+          <CardsShimmer style={shimmerStyle} />
+          <CardsShimmer style={shimmerStyle} />
+          <CardsShimmer style={shimmerStyle} />
+        </Wrapper>
+      );
+    }
 
     return (
       <Wrapper>
@@ -292,7 +338,7 @@ const EventsScreenRefetchContainer = createRefetchContainer(
   `,
 );
 
-export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
+export default createQueryRendererWithCustomLoading(EventsScreenRefetchContainer, EventsScreen, {
   query: graphql`
     query EventsScreenQuery {
       ...EventsScreen_query
@@ -300,5 +346,5 @@ export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
   `,
   variables: {
     first: 10,
-  }
+  },
 });

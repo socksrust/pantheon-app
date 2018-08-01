@@ -5,6 +5,11 @@
 ## Description
 Pantheon is an open source app to manage open source meetups and conferences.
 
+<p align="center">
+  <img width="324" height="578" src="./.github/pantheon.gif">
+</p>
+
+
 ## Run locally
 
 ### Setup React Native

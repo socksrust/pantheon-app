@@ -7,7 +7,7 @@ import { createQueryRenderer } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList, PermissionsAndroid } from 'react-native';
+import { StatusBar, FlatList, ActivityIndicator } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -17,17 +17,25 @@ import EventCard from '../../components/EventCardMVP';
 import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
+import getUserLocation from '../../services/location';
 
 const TOTAL_REFETCH_ITEMS = 10;
-var timeOutRef;
+
 const Wrapper = styled.View`
   flex: 1;
   background-color: white
 `;
 
+const LoadingUserLocation = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
 type Props = {
   navigation: Object,
   relay: Object,
+  query: Object,
   context: ContextType,
 };
 
@@ -39,7 +47,8 @@ type State = {
   isDistanceModalVisible: boolean,
   isRefreshing: boolean,
   isFetchingEnd: boolean,
-  hasPosition: boolean
+  hasPosition: boolean,
+  isGettingUserLocation: boolean,
 };
 
 @withContext
@@ -53,11 +62,12 @@ class EventsScreen extends Component<Props, State> {
     isDistanceModalVisible: false,
     isRefreshing: false,
     isFetchingEnd: false,
-    hasPosition: false
+    hasPosition: false,
+    isGettingUserLocation: true,
   };
 
   changeSearchText = (search: string): void => {
-    return this.refetch({ search })
+    return this.refetch({ search });
   };
 
   setVisible = () => {
@@ -67,27 +77,22 @@ class EventsScreen extends Component<Props, State> {
       search: IsSearchVisible ? search : '',
     });
     if (IsSearchVisible) {
-      this.refetch({search: ''});
+      this.refetch({ search: '' });
     }
   };
 
   async componentDidMount() {
-    const { context, relay } = this.props;
-    console.log('didMount');
-    const granted = await PermissionsAndroid.check( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION );
-    console.log('granted', granted);
-      navigator.geolocation.getCurrentPosition(
-      ({coords}) => {
-        console.log('coords', coords);
-        const coordinates = [coords.longitude, coords.latitude];
-        this.setState({coordinates});
+    const { relay } = this.props;
 
-        relay.refetch({coordinates, distance: 80, first: 10});
-      },
-      error => console.log('error', error),
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
-    );
-    
+    const { latitude, longitude } = await getUserLocation(navigator);
+    const coordinates = [longitude, latitude];
+
+    this.setState({
+      coordinates,
+      isGettingUserLocation: false,
+    });
+
+    relay.refetch({ coordinates, distance: 80, first: 10 });
   }
 
   changeDistance(distance) {
@@ -113,7 +118,6 @@ class EventsScreen extends Component<Props, State> {
       ...newRefetchVariable,
     });
 
-    console.log('newRefetchVariable', newRefetchVariable);
     this.props.relay.refetch(
       refetchVariables,
       null,
@@ -127,7 +131,6 @@ class EventsScreen extends Component<Props, State> {
         force: true,
       },
     );
-    
   };
 
   onEndReached = () => {
@@ -187,17 +190,9 @@ class EventsScreen extends Component<Props, State> {
     );
   };
 
-  render() {
+  renderContent = () => {
     const { query } = this.props;
-    const {
-      search,
-      IsSearchVisible,
-      distance,
-      isDistanceModalVisible,
-      isRefreshing,
-      hasPosition,
-      coordinates
-    } = this.state;
+    const { search, IsSearchVisible, distance, isDistanceModalVisible, isRefreshing } = this.state;
 
     return (
       <Wrapper>
@@ -212,7 +207,7 @@ class EventsScreen extends Component<Props, State> {
           distance={distance}
         />
         <FlatList
-          data={coordinates.latitude !== 0 ? idx(query, _ => _.events.edges) : []}
+          data={idx(query, _ => _.events.edges)}
           keyExtractor={item => item.node.id}
           renderItem={this.renderItem}
           onRefresh={this.onRefresh}
@@ -229,6 +224,18 @@ class EventsScreen extends Component<Props, State> {
         />
       </Wrapper>
     );
+  };
+
+  renderLocationLoading = () => (
+    <LoadingUserLocation>
+      <ActivityIndicator size="small" color="#2979FF" />
+    </LoadingUserLocation>
+  );
+
+  render() {
+    const { isGettingUserLocation } = this.state;
+
+    return isGettingUserLocation ? this.renderLocationLoading() : this.renderContent();
   }
 }
 
@@ -300,5 +307,5 @@ export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
   `,
   variables: {
     first: 10,
-  }
+  },
 });

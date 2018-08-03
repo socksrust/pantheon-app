@@ -7,7 +7,7 @@ import { createQueryRendererWithCustomLoading } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList, PermissionsAndroid, Animated, Dimensions } from 'react-native';
+import { StatusBar, FlatList, Animated, Dimensions } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -17,6 +17,7 @@ import EventCard from '../../components/EventCardMVP';
 import EmptyView from '../../components/EmptyView';
 import { ROUTENAMES } from '../../navigation/RouteNames';
 import DistanceModal from './DistanceModal';
+import getUserLocation from '../../services/location';
 
 const TOTAL_REFETCH_ITEMS = 10;
 
@@ -30,13 +31,14 @@ const { width } = Dimensions.get('window');
 const CardsShimmer = styled(Animated.View)`
   height: 120;
   width: ${width - 30};
-  border-radius: 10;
+  border-radius: 15;
   margin: 10px 15px;
 `;
 
 type Props = {
   navigation: Object,
   relay: Object,
+  query: Object,
   context: ContextType,
   isFetching: boolean,
 };
@@ -50,6 +52,7 @@ type State = {
   isRefreshing: boolean,
   isFetchingEnd: boolean,
   hasPosition: boolean,
+  isGettingUserLocation: boolean,
   animatedValue: Animated.Value,
 };
 
@@ -65,7 +68,9 @@ class EventsScreen extends Component<Props, State> {
     isRefreshing: false,
     isFetchingEnd: false,
     hasPosition: false,
+    isGettingUserLocation: true,
     animatedValue: new Animated.Value(0),
+    firstRefetchBeforeLocationSet: true,
   };
 
   changeSearchText = (search: string): void => {
@@ -84,21 +89,12 @@ class EventsScreen extends Component<Props, State> {
   };
 
   async componentDidMount() {
-    const { relay } = this.props;
-    const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-    if (granted) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-          const coordinates = [coords.longitude, coords.latitude];
-          this.setState({ coordinates });
+    const { latitude, longitude } = await getUserLocation(navigator);
+    const coordinates = [longitude, latitude];
 
-          relay.refetch({ coordinates, distance: 80, first: 10 });
-        },
-        //eslint-disable-next-line
-        error => console.log('error', error),
-        { enableHighAccuracy: false, timeout: 20000, maximumAge: 20000 },
-      );
-    }
+    this.setState({
+      coordinates,
+    });
   }
 
   changeDistance(distance) {
@@ -132,6 +128,7 @@ class EventsScreen extends Component<Props, State> {
           isRefreshing: false,
           isFetchingEnd: false,
           hasPosition: true,
+          isGettingUserLocation: false,
         }),
       {
         force: true,
@@ -211,39 +208,55 @@ class EventsScreen extends Component<Props, State> {
     );
   };
 
-  render() {
-    const { query, isFetching } = this.props;
-    const { search, IsSearchVisible, distance, isDistanceModalVisible, isRefreshing, coordinates } = this.state;
+  renderLoading = () => {
+    const { search, IsSearchVisible, distance } = this.state;
 
-    if (isFetching) {
-      const interpolateColor = this.state.animatedValue.interpolate({
-        inputRange: [0, 150],
-        outputRange: ['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)'],
+    const interpolateColor = this.state.animatedValue.interpolate({
+      inputRange: [0, 150],
+      outputRange: ['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)'],
+    });
+
+    const shimmerStyle = {
+      backgroundColor: interpolateColor,
+    };
+
+    this.animateShimmer();
+
+    return (
+      <Wrapper>
+        <LoggedHeader
+          title="Events"
+          searchValue={search}
+          IsSearchVisible={IsSearchVisible}
+          showSearch={this.setVisible}
+          onChangeSearch={search => this.changeSearchText(search)}
+          openDistanceModal={() => this.setState({ isDistanceModalVisible: true })}
+          distance={distance}
+        />
+        <CardsShimmer style={shimmerStyle} />
+        <CardsShimmer style={shimmerStyle} />
+        <CardsShimmer style={shimmerStyle} />
+      </Wrapper>
+    );
+  };
+
+  componentDidUpdate() {
+    const { isGettingUserLocation, firstRefetchBeforeLocationSet } = this.state;
+    const { isFetching } = this.props;
+
+    console.log(isGettingUserLocation && !isFetching);
+
+    if (isGettingUserLocation && !isFetching && firstRefetchBeforeLocationSet) {
+      this.setState({
+        firstRefetchBeforeLocationSet: false,
       });
-
-      const shimmerStyle = {
-        backgroundColor: interpolateColor,
-      };
-
-      this.animateShimmer();
-
-      return (
-        <Wrapper>
-          <LoggedHeader
-            title="Events"
-            searchValue={search}
-            IsSearchVisible={IsSearchVisible}
-            showSearch={this.setVisible}
-            onChangeSearch={search => this.changeSearchText(search)}
-            openDistanceModal={() => this.setState({ isDistanceModalVisible: true })}
-            distance={distance}
-          />
-          <CardsShimmer style={shimmerStyle} />
-          <CardsShimmer style={shimmerStyle} />
-          <CardsShimmer style={shimmerStyle} />
-        </Wrapper>
-      );
+      this.refetch();
     }
+  }
+
+  renderContent = () => {
+    const { query } = this.props;
+    const { search, IsSearchVisible, distance, isDistanceModalVisible, isRefreshing } = this.state;
 
     return (
       <Wrapper>
@@ -258,7 +271,7 @@ class EventsScreen extends Component<Props, State> {
           distance={distance}
         />
         <FlatList
-          data={coordinates.latitude !== 0 ? idx(query, _ => _.events.edges) : []}
+          data={idx(query, _ => _.events.edges)}
           keyExtractor={item => item.node.id}
           renderItem={this.renderItem}
           onRefresh={this.onRefresh}
@@ -275,6 +288,13 @@ class EventsScreen extends Component<Props, State> {
         />
       </Wrapper>
     );
+  };
+
+  render() {
+    const { isFetching } = this.props;
+    const { isGettingUserLocation } = this.state;
+
+    return isGettingUserLocation || isFetching ? this.renderLoading() : this.renderContent();
   }
 }
 

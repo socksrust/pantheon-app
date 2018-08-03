@@ -7,7 +7,7 @@ import { AsyncStorage } from 'react-native';
 // Define a function that fetches the results of an operation (query/mutation/etc)
 // and returns its results as a Promise:
 // const prodUrl = 'https://conference-server.herokuapp.com/graphql';
-const devUrl = 'http://localhost:5000/graphql';
+const devUrl = 'http://localhost:5001/graphql';
 
 const fetchQuery = async (operation, variables) => {
   return fetch(devUrl, {

@@ -31,7 +31,7 @@ const { width } = Dimensions.get('window');
 const CardsShimmer = styled(Animated.View)`
   height: 120;
   width: ${width - 30};
-  border-radius: 10;
+  border-radius: 15;
   margin: 10px 15px;
 `;
 
@@ -70,6 +70,7 @@ class EventsScreen extends Component<Props, State> {
     hasPosition: false,
     isGettingUserLocation: true,
     animatedValue: new Animated.Value(0),
+    firstRefetchBeforeLocationSet: true,
   };
 
   changeSearchText = (search: string): void => {
@@ -88,17 +89,12 @@ class EventsScreen extends Component<Props, State> {
   };
 
   async componentDidMount() {
-    const { relay } = this.props;
-
     const { latitude, longitude } = await getUserLocation(navigator);
     const coordinates = [longitude, latitude];
 
     this.setState({
       coordinates,
-      isGettingUserLocation: false,
     });
-
-    relay.refetch({ coordinates, distance: 80, first: 10 });
   }
 
   changeDistance(distance) {
@@ -132,6 +128,7 @@ class EventsScreen extends Component<Props, State> {
           isRefreshing: false,
           isFetchingEnd: false,
           hasPosition: true,
+          isGettingUserLocation: false,
         }),
       {
         force: true,
@@ -242,6 +239,20 @@ class EventsScreen extends Component<Props, State> {
       </Wrapper>
     );
   };
+
+  componentDidUpdate() {
+    const { isGettingUserLocation, firstRefetchBeforeLocationSet } = this.state;
+    const { isFetching } = this.props;
+
+    console.log(isGettingUserLocation && !isFetching);
+
+    if (isGettingUserLocation && !isFetching && firstRefetchBeforeLocationSet) {
+      this.setState({
+        firstRefetchBeforeLocationSet: false,
+      });
+      this.refetch();
+    }
+  }
 
   renderContent = () => {
     const { query } = this.props;

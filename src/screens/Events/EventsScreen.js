@@ -3,11 +3,11 @@
 import React, { Component } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import idx from 'idx';
-import { createQueryRenderer } from '../../relay/RelayUtils';
+import { createQueryRendererWithCustomLoading } from '../../relay/RelayUtils';
 import { withContext } from '../../Context';
 import type { ContextType } from '../../Context';
 
-import { StatusBar, FlatList, ActivityIndicator } from 'react-native';
+import { StatusBar, FlatList, Animated, Dimensions } from 'react-native';
 import styled from 'styled-components/native';
 import { withNavigation } from 'react-navigation';
 
@@ -26,10 +26,13 @@ const Wrapper = styled.View`
   background-color: white
 `;
 
-const LoadingUserLocation = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
+const { width } = Dimensions.get('window');
+
+const CardsShimmer = styled(Animated.View)`
+  height: 120;
+  width: ${width - 30};
+  border-radius: 10;
+  margin: 10px 15px;
 `;
 
 type Props = {
@@ -37,6 +40,7 @@ type Props = {
   relay: Object,
   query: Object,
   context: ContextType,
+  isFetching: boolean,
 };
 
 type State = {
@@ -49,6 +53,7 @@ type State = {
   isFetchingEnd: boolean,
   hasPosition: boolean,
   isGettingUserLocation: boolean,
+  animatedValue: Animated.Value,
 };
 
 @withContext
@@ -64,6 +69,7 @@ class EventsScreen extends Component<Props, State> {
     isFetchingEnd: false,
     hasPosition: false,
     isGettingUserLocation: true,
+    animatedValue: new Animated.Value(0),
   };
 
   changeSearchText = (search: string): void => {
@@ -101,12 +107,12 @@ class EventsScreen extends Component<Props, State> {
   }
 
   onRefresh = () => {
+    this.setState({ isRefreshing: true });
     this.refetch();
   };
 
   refetch = newRefetchVariable => {
     const { isRefreshing, search, distance, coordinates } = this.state;
-    this.setState({ isRefreshing: true });
     newRefetchVariable && this.setState(newRefetchVariable);
 
     if (isRefreshing) return;
@@ -173,6 +179,21 @@ class EventsScreen extends Component<Props, State> {
     );
   };
 
+  animateShimmer = () => {
+    Animated.sequence([
+      Animated.timing(this.state.animatedValue, {
+        toValue: 150,
+        duration: 500,
+      }),
+      Animated.timing(this.state.animatedValue, {
+        toValue: 0,
+        duration: 600,
+      }),
+    ]).start(() => {
+      this.animateShimmer();
+    });
+  };
+
   renderItem = ({ item }) => {
     const { node } = item;
     const splittedAddress = node.location.street.split('-');
@@ -187,6 +208,38 @@ class EventsScreen extends Component<Props, State> {
             id: node.id,
           })}
       />
+    );
+  };
+
+  renderLoading = () => {
+    const { search, IsSearchVisible, distance } = this.state;
+
+    const interpolateColor = this.state.animatedValue.interpolate({
+      inputRange: [0, 150],
+      outputRange: ['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)'],
+    });
+
+    const shimmerStyle = {
+      backgroundColor: interpolateColor,
+    };
+
+    this.animateShimmer();
+
+    return (
+      <Wrapper>
+        <LoggedHeader
+          title="Events"
+          searchValue={search}
+          IsSearchVisible={IsSearchVisible}
+          showSearch={this.setVisible}
+          onChangeSearch={search => this.changeSearchText(search)}
+          openDistanceModal={() => this.setState({ isDistanceModalVisible: true })}
+          distance={distance}
+        />
+        <CardsShimmer style={shimmerStyle} />
+        <CardsShimmer style={shimmerStyle} />
+        <CardsShimmer style={shimmerStyle} />
+      </Wrapper>
     );
   };
 
@@ -226,16 +279,11 @@ class EventsScreen extends Component<Props, State> {
     );
   };
 
-  renderLocationLoading = () => (
-    <LoadingUserLocation>
-      <ActivityIndicator size="small" color="#2979FF" />
-    </LoadingUserLocation>
-  );
-
   render() {
+    const { isFetching } = this.props;
     const { isGettingUserLocation } = this.state;
 
-    return isGettingUserLocation ? this.renderLocationLoading() : this.renderContent();
+    return isGettingUserLocation || isFetching ? this.renderLoading() : this.renderContent();
   }
 }
 
@@ -299,7 +347,7 @@ const EventsScreenRefetchContainer = createRefetchContainer(
   `,
 );
 
-export default createQueryRenderer(EventsScreenRefetchContainer, EventsScreen, {
+export default createQueryRendererWithCustomLoading(EventsScreenRefetchContainer, EventsScreen, {
   query: graphql`
     query EventsScreenQuery {
       ...EventsScreen_query

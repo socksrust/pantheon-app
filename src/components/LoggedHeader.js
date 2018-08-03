@@ -1,17 +1,19 @@
 import * as React from 'react';
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, Platform } from 'react-native';
 import styled from 'styled-components/native';
-import LinearGradient from 'react-native-linear-gradient';
 import { IMAGES } from '../utils/design/images';
 
-const Wrapper = styled(LinearGradient).attrs({
-  colors: ['#53B1FF', '#651FFF'],
-  start: { x: 0, y: 1 },
-  end: { x: 1, y: 1 },
-})`
+const Wrapper = styled.View.attrs(
+  {
+    // colors: ['#53B1FF'],
+    // start: { x: 0, y: 1 },
+    // end: { x: 1, y: 1 },
+  },
+)`
   flex-direction: column;
   justify-content: center;
-  padding-top: 36px;
+  background-color: rgb(56,101,249);
+  padding-top: 10;
   padding-horizontal: 18;
   padding-bottom: 20;
 `;
@@ -44,7 +46,9 @@ const PillLabel = styled.Text`
 const Title = styled.Text`
   font-size: 30;
   font-weight: bold;
-  color: #ffffff;
+  color: #FFF;
+  width: 280;
+  padding: 10px;
 `;
 
 const TitleAndIcon = styled.View`
@@ -105,17 +109,11 @@ const LoggedHeader = ({
   IsSearchVisible,
   openDistanceModal,
   distance,
-  openDateModal,
 }: Props) => (
   <Wrapper>
-    <SafeAreaView />
+    {Platform.OS === 'ios' && <SafeAreaView />}
     <TitleAndIcon>
-      {!IsSearchVisible
-        ? <Title>{title}</Title>
-        : <SearchInput
-            value={searchValue}
-            onChangeText={onChangeSearch}
-          />}
+      {!IsSearchVisible ? <Title>{title}</Title> : <SearchInput value={searchValue} onChangeText={onChangeSearch} />}
       <Button onPress={showSearch}>
         <Icon visible={IsSearchVisible} />
       </Button>
